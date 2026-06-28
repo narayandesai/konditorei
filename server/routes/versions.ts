@@ -4,6 +4,11 @@ import type { Db } from '../db.js'
 import type { Version, VersionWithCode } from '../../src/types.js'
 import { diffLines } from '../diff.js'
 
+function parsePositiveInt(s: string): number | null {
+  const n = Number(s)
+  return Number.isInteger(n) && n >= 1 ? n : null
+}
+
 export function versionsRouter(db: Db) {
   const router = Router()
 
@@ -15,10 +20,8 @@ export function versionsRouter(db: Db) {
   })
 
   router.get('/:songId/versions/:v', (req, res) => {
-    const v = Number(req.params.v)
-    if (!Number.isInteger(v) || v < 1) {
-      res.status(400).json({ error: 'version must be a positive integer' }); return
-    }
+    const v = parsePositiveInt(req.params.v)
+    if (v === null) { res.status(400).json({ error: 'version must be a positive integer' }); return }
     const version = db
       .prepare('SELECT * FROM versions WHERE song_id = ? AND number = ?')
       .get(req.params.songId, v) as unknown as VersionWithCode | undefined
@@ -47,11 +50,8 @@ export function versionsRouter(db: Db) {
   })
 
   router.get('/:songId/versions/:v/diff', (req, res) => {
-    const v = Number(req.params.v)
-    if (!Number.isInteger(v) || v < 1) {
-      res.status(400).json({ error: 'version must be a positive integer' })
-      return
-    }
+    const v = parsePositiveInt(req.params.v)
+    if (v === null) { res.status(400).json({ error: 'version must be a positive integer' }); return }
     const rows = db
       .prepare('SELECT * FROM versions WHERE song_id = ? AND number IN (?, ?) ORDER BY number')
       .all(req.params.songId, v - 1, v) as unknown as VersionWithCode[]
@@ -73,9 +73,11 @@ export function versionsRouter(db: Db) {
   })
 
   router.post('/:songId/revert/:v', (req, res) => {
+    const v = parsePositiveInt(req.params.v)
+    if (v === null) { res.status(400).json({ error: 'version must be a positive integer' }); return }
     const target = db
       .prepare('SELECT * FROM versions WHERE song_id = ? AND number = ?')
-      .get(req.params.songId, req.params.v) as unknown as VersionWithCode | undefined
+      .get(req.params.songId, v) as unknown as VersionWithCode | undefined
     if (!target) { res.status(404).json({ error: 'version not found' }); return }
 
     const last = db
