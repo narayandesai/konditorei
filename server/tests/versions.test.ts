@@ -40,6 +40,18 @@ describe('versions', () => {
     expect(res.body.number).toBe(2)
   })
 
+  it('GET /api/songs/:id/versions/:v returns a single version with code', async () => {
+    await request(app).post(`/api/songs/${songId}/versions`).send({ code: 'note("c3")' })
+    const res = await request(app).get(`/api/songs/${songId}/versions/1`)
+    expect(res.status).toBe(200)
+    expect(res.body).toMatchObject({ number: 1, song_id: songId, code: 'note("c3")' })
+  })
+
+  it('GET /api/songs/:id/versions/:v returns 404 for unknown version', async () => {
+    const res = await request(app).get(`/api/songs/${songId}/versions/99`)
+    expect(res.status).toBe(404)
+  })
+
   it('GET /api/songs/:id/versions/:v/diff returns diff', async () => {
     await request(app).post(`/api/songs/${songId}/versions`).send({ code: 'note("c3")' })
     await request(app).post(`/api/songs/${songId}/versions`).send({ code: 'note("c3")\n.fast(2)' })
