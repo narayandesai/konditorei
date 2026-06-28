@@ -46,6 +46,16 @@ describe('songs', () => {
     expect(list.body).toHaveLength(0)
   })
 
+  it('DELETE /api/songs/:id returns 404 for nonexistent song', async () => {
+    const res = await request(app).delete('/api/songs/999')
+    expect(res.status).toBe(404)
+  })
+
+  it('POST /api/songs returns 404 for nonexistent user', async () => {
+    const res = await request(app).post('/api/songs').send({ userId: 999, name: 'ghost song' })
+    expect(res.status).toBe(404)
+  })
+
   it('GET /api/songs?userId= returns 400 when userId missing', async () => {
     const res = await request(app).get('/api/songs')
     expect(res.status).toBe(400)
