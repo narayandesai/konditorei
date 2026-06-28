@@ -4,6 +4,7 @@ import { useSongs } from './hooks/useSongs.js'
 import { useVersions } from './hooks/useVersions.js'
 import { TopBar, type Visualizer } from './components/TopBar.js'
 import { Editor } from './components/Editor.js'
+import { VersionModal } from './components/VersionModal.js'
 import * as strudel from './lib/strudel.js'
 import type { StrudelError } from './lib/strudel.js'
 
@@ -64,6 +65,14 @@ export function App() {
           {strudelError}
           <button onClick={() => setStrudelError(null)} style={{ marginLeft: 8, background: 'none', border: 'none', color: '#fff' }}>×</button>
         </div>
+      )}
+      {showVersionModal && activeSong && (
+        <VersionModal
+          songId={activeSong.id}
+          versions={versions}
+          onRevert={(v) => revertTo(v)}
+          onClose={() => setShowVersionModal(false)}
+        />
       )}
     </div>
   )
