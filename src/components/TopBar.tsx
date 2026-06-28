@@ -14,6 +14,7 @@ interface TopBarProps {
   onCreateSong: (name: string) => void
   onRenameSong: (id: number, name: string) => void
   onDeleteSong: (id: number) => void
+  onPublishSong: (id: number) => void
   latestVersion: Version | null
   onShowVersions: () => void
   onSaveVersion: () => void
@@ -26,7 +27,7 @@ interface TopBarProps {
 
 export function TopBar({
   users, activeUser, onUserSelect, onCreateUser,
-  songs, activeSong, onSongSelect, onCreateSong, onRenameSong, onDeleteSong,
+  songs, activeSong, onSongSelect, onCreateSong, onRenameSong, onDeleteSong, onPublishSong,
   latestVersion, onShowVersions,
   onSaveVersion, isPlaying, onPlay, onStop,
   visualizer, onVisualizerChange,
@@ -94,12 +95,17 @@ export function TopBar({
               <div key={s.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div onClick={() => { onSongSelect(s); setSongMenuOpen(false) }}
                   style={{ flex: 1, padding: '8px 12px', cursor: 'pointer', color: s.id === activeSong?.id ? 'var(--accent)' : 'var(--text-primary)' }}
-                >{s.name}</div>
+                >{s.name}{s.publication_count ? <span style={{ color: 'var(--green)', marginLeft: 6, fontSize: 10 }}>·</span> : null}</div>
                 <button
                   onClick={(e) => { e.stopPropagation(); const name = prompt('Rename song:', s.name); if (name && name !== s.name) onRenameSong(s.id, name) }}
                   style={{ background: 'none', border: 'none', color: 'var(--text-muted)', padding: '6px 4px' }}
                   title="Rename"
                 >✎</button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); onPublishSong(s.id); setSongMenuOpen(false) }}
+                  style={{ background: 'none', border: 'none', color: 'var(--text-muted)', padding: '6px 4px' }}
+                  title="Publish"
+                >↑</button>
                 <button
                   onClick={(e) => { e.stopPropagation(); if (confirm(`Delete "${s.name}"?`)) { onDeleteSong(s.id); setSongMenuOpen(false) } }}
                   style={{ background: 'none', border: 'none', color: 'var(--text-muted)', padding: '6px 8px' }}

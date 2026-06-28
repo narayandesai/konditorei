@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react'
 import { useActiveUser } from './hooks/useActiveUser.js'
 import { useSongs } from './hooks/useSongs.js'
 import { useVersions } from './hooks/useVersions.js'
+import { usePublications } from './hooks/usePublications.js'
+import { PublicationsModal } from './components/PublicationsModal.js'
 import { TopBar, type Visualizer } from './components/TopBar.js'
 import { Editor } from './components/Editor.js'
 import { VersionModal } from './components/VersionModal.js'
@@ -13,6 +15,8 @@ export function App() {
   const { users, activeUser, setActiveUser, createUser } = useActiveUser()
   const { songs, activeSong, setActiveSong, createSong, renameSong, deleteSong } = useSongs(activeUser?.id)
   const { versions, latestCode, saveVersion, revertTo } = useVersions(activeSong?.id)
+  const { publications, createPublication, updatePublication, deletePublication } = usePublications(activeSong?.id)
+  const [showPublicationsModal, setShowPublicationsModal] = useState(false)
 
   const [editorCode, setEditorCode] = useState('')
   const [isPlaying, setIsPlaying] = useState(false)
@@ -23,6 +27,12 @@ export function App() {
 
   function handleError(e: StrudelError) {
     setStrudelError(e.message)
+  }
+
+  function handlePublishSong(id: number) {
+    const song = songs.find((s) => s.id === id)
+    if (song && song.id !== activeSong?.id) setActiveSong(song)
+    setShowPublicationsModal(true)
   }
 
   // Sync editorCode whenever the server-loaded latestCode changes (initial load or song switch).
@@ -55,6 +65,7 @@ export function App() {
           onCreateSong={createSong}
           onRenameSong={renameSong}
           onDeleteSong={deleteSong}
+          onPublishSong={handlePublishSong}
           latestVersion={versions[versions.length - 1] ?? null}
           onShowVersions={() => setShowVersionModal(true)}
           onSaveVersion={() => saveVersion(editorCode)}
@@ -95,6 +106,17 @@ export function App() {
           versions={versions}
           onRevert={(v) => revertTo(v)}
           onClose={() => setShowVersionModal(false)}
+        />
+      )}
+      {showPublicationsModal && activeSong && (
+        <PublicationsModal
+          songName={activeSong.name}
+          versions={versions}
+          publications={publications}
+          onCreatePublication={createPublication}
+          onUpdatePublication={updatePublication}
+          onDeletePublication={deletePublication}
+          onClose={() => setShowPublicationsModal(false)}
         />
       )}
     </div>
