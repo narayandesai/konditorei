@@ -3,3 +3,9 @@ dist/
 konditorei.db
 *.db-shm
 *.db-wal
+.agents/
+.claude/
+.serena/
+.superpowers/
+skills-lock.json
+docs/superpowers/
