@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { api } from '../lib/api.js'
 import type { Version, DiffLine } from '../types.js'
 
@@ -12,6 +12,18 @@ interface VersionModalProps {
 export function VersionModal({ songId, versions, onRevert, onClose }: VersionModalProps) {
   const [selectedV, setSelectedV] = useState<number>(versions[versions.length - 1]?.number ?? 1)
   const [diff, setDiff] = useState<DiffLine[]>([])
+
+  // If a new version is saved while the modal is open and selectedV was the latest,
+  // follow the selection to the new latest so the revert button doesn't appear erroneously.
+  const prevLatestRef = useRef(versions[versions.length - 1]?.number)
+  useEffect(() => {
+    const newLatest = versions[versions.length - 1]?.number
+    if (newLatest === undefined) return
+    if (selectedV === prevLatestRef.current && selectedV !== newLatest) {
+      setSelectedV(newLatest)
+    }
+    prevLatestRef.current = newLatest
+  }, [versions])
 
   useEffect(() => {
     if (!selectedV) return
