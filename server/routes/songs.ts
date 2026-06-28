@@ -13,7 +13,14 @@ export function songsRouter(db: Db) {
       return
     }
     const songs = db
-      .prepare('SELECT * FROM songs WHERE user_id = ? ORDER BY created_at DESC')
+      .prepare(
+        `SELECT s.*, COUNT(p.id) AS publication_count
+         FROM songs s
+         LEFT JOIN publications p ON p.song_id = s.id
+         WHERE s.user_id = ?
+         GROUP BY s.id
+         ORDER BY s.created_at DESC`
+      )
       .all(Number(userId)) as unknown as Song[]
     res.json(songs)
   })

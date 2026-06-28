@@ -60,4 +60,10 @@ describe('songs', () => {
     const res = await request(app).get('/api/songs')
     expect(res.status).toBe(400)
   })
+
+  it('GET /api/songs?userId= includes publication_count', async () => {
+    const song = await request(app).post('/api/songs').send({ userId, name: 'track' })
+    const list = await request(app).get(`/api/songs?userId=${userId}`)
+    expect(list.body[0].publication_count).toBe(0)
+  })
 })
