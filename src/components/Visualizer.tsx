@@ -19,7 +19,10 @@ export function Visualizer({ type, isPlaying }: VisualizerProps) {
   useLayoutEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
-    const sync = () => { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight }
+    const sync = () => {
+      if (canvas.width !== canvas.offsetWidth) canvas.width = canvas.offsetWidth
+      if (canvas.height !== canvas.offsetHeight) canvas.height = canvas.offsetHeight
+    }
     sync()
     const ro = new ResizeObserver(sync)
     ro.observe(canvas)
