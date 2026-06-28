@@ -80,8 +80,8 @@ export function versionsRouter(db: Db) {
 
     const last = db
       .prepare('SELECT number FROM versions WHERE song_id = ? ORDER BY number DESC LIMIT 1')
-      .get(req.params.songId) as unknown as { number: number }
-    const number = last.number + 1
+      .get(req.params.songId) as unknown as { number: number } | undefined
+    const number = (last?.number ?? 0) + 1
     const created_at = Date.now()
     const result = db
       .prepare('INSERT INTO versions (song_id, number, code, created_at) VALUES (?, ?, ?, ?)')
