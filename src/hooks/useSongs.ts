@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { api } from '../lib/api.js'
 import type { Song } from '../types.js'
 
@@ -14,14 +14,21 @@ export function useSongs(userId: number | undefined) {
     }).catch(() => { setSongs([]); setActiveSong(null) })
   }, [userId])
 
+  const activeSongRef = useRef(activeSong)
+  activeSongRef.current = activeSong
+
   // Keep activeSong in sync when it's no longer present in the songs list
   // (e.g. after a delete resolves). Avoids calling setActiveSong as a side
   // effect inside a setSongs updater, which is unsafe in Strict Mode.
+  // activeSong is read via ref so only songs changes trigger this, preventing
+  // a second redundant run after setActiveSong fires.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    if (activeSong && !songs.find((s) => s.id === activeSong.id)) {
+    const cur = activeSongRef.current
+    if (cur && !songs.find((s) => s.id === cur.id)) {
       setActiveSong(songs[0] ?? null)
     }
-  }, [songs, activeSong])
+  }, [songs])
 
   async function createSong(name: string): Promise<Song> {
     if (!userId) throw new Error('no active user')
