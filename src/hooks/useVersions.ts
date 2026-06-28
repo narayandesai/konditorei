@@ -8,13 +8,16 @@ export function useVersions(songId: number | undefined) {
 
   useEffect(() => {
     if (!songId) { setVersions([]); setLatestCode(''); return }
+    let cancelled = false
     api.versions.list(songId).then(async (all) => {
+      if (cancelled) return
       setVersions(all)
       if (all.length === 0) { setLatestCode(''); return }
       const latest = all[all.length - 1]
       const withCode = await api.versions.get(songId, latest.number)
-      setLatestCode(withCode.code)
-    })
+      if (!cancelled) setLatestCode(withCode.code)
+    }).catch(() => { if (!cancelled) { setVersions([]); setLatestCode('') } })
+    return () => { cancelled = true }
   }, [songId])
 
   async function saveVersion(code: string): Promise<VersionWithCode> {
