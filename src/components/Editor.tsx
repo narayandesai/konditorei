@@ -3,13 +3,16 @@ import { EditorView, basicSetup } from 'codemirror'
 import { EditorState } from '@codemirror/state'
 import { oneDark } from '@codemirror/theme-one-dark'
 import { javascript } from '@codemirror/lang-javascript'
+// @ts-ignore — @strudel/codemirror ships no TypeScript declarations
+import { highlightExtension, highlightMiniLocations } from '@strudel/codemirror'
 
 interface EditorProps {
   code: string
   onChange: (code: string) => void
+  onRegisterHighlight?: (fn: (haps: unknown[], atTime: number) => void) => void
 }
 
-export function Editor({ code, onChange }: EditorProps) {
+export function Editor({ code, onChange, onRegisterHighlight }: EditorProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const viewRef = useRef<EditorView | null>(null)
   const onChangeRef = useRef(onChange)
@@ -25,6 +28,7 @@ export function Editor({ code, onChange }: EditorProps) {
           basicSetup,
           oneDark,
           javascript(),
+          highlightExtension,
           EditorView.updateListener.of((update) => {
             if (update.docChanged) {
               onChangeRef.current(update.state.doc.toString())
@@ -40,7 +44,14 @@ export function Editor({ code, onChange }: EditorProps) {
     })
 
     viewRef.current = view
-    return () => view.destroy()
+    onRegisterHighlight?.((haps, atTime) => {
+      highlightMiniLocations(view, atTime, haps)
+    })
+
+    return () => {
+      view.destroy()
+      onRegisterHighlight?.((_haps, _atTime) => {})
+    }
   }, [])
 
   useEffect(() => {

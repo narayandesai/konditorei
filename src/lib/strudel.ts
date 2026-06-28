@@ -2,6 +2,7 @@
 import { webaudioRepl } from '@strudel/webaudio'
 
 export type StrudelError = { message: string }
+export type HapsCallback = (haps: unknown[], atTime: number) => void
 
 type StrudelInstance = {
   evaluate: (code: string) => Promise<unknown>
@@ -10,6 +11,11 @@ type StrudelInstance = {
 }
 
 let strudelInstance: StrudelInstance | null = null
+let hapsCallback: HapsCallback | null = null
+
+export function setHapsCallback(cb: HapsCallback | null): void {
+  hapsCallback = cb
+}
 
 function getInstance(onError: (e: StrudelError) => void): StrudelInstance {
   if (!strudelInstance) {
@@ -19,9 +25,12 @@ function getInstance(onError: (e: StrudelError) => void): StrudelInstance {
     // It returns { evaluate, start, stop, pause, toggle, scheduler, state, … }
     strudelInstance = webaudioRepl({
       onEvalError: (e: unknown) => onError({ message: String(e) }),
-      onUpdateState: (s: { schedulerError?: unknown }) => {
+      onUpdateState: (s: { schedulerError?: unknown; haps?: unknown[]; atTime?: number }) => {
         if (s.schedulerError) {
           onError({ message: String(s.schedulerError) })
+        }
+        if (s.haps && s.atTime !== undefined && hapsCallback) {
+          hapsCallback(s.haps, s.atTime)
         }
       },
     }) as StrudelInstance

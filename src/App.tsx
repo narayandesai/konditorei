@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useActiveUser } from './hooks/useActiveUser.js'
 import { useSongs } from './hooks/useSongs.js'
 import { useVersions } from './hooks/useVersions.js'
@@ -7,7 +7,7 @@ import { Editor } from './components/Editor.js'
 import { VersionModal } from './components/VersionModal.js'
 import { Visualizer as VisualizerPanel } from './components/Visualizer.js'
 import * as strudel from './lib/strudel.js'
-import type { StrudelError } from './lib/strudel.js'
+import type { StrudelError, HapsCallback } from './lib/strudel.js'
 
 export function App() {
   const { users, activeUser, setActiveUser, createUser } = useActiveUser()
@@ -19,6 +19,7 @@ export function App() {
   const [showVersionModal, setShowVersionModal] = useState(false)
   const [strudelError, setStrudelError] = useState<string | null>(null)
   const [visualizer, setVisualizer] = useState<Visualizer>('none')
+  const highlightRef = useRef<HapsCallback | null>(null)
 
   function handleError(e: StrudelError) {
     setStrudelError(e.message)
@@ -28,6 +29,11 @@ export function App() {
   useEffect(() => {
     setEditorCode(latestCode)
   }, [latestCode])
+
+  useEffect(() => {
+    strudel.setHapsCallback((haps, atTime) => highlightRef.current?.(haps, atTime))
+    return () => strudel.setHapsCallback(null)
+  }, [])
 
   // Stop playback when the active song changes so we never layer two schedulers.
   useEffect(() => {
@@ -69,7 +75,11 @@ export function App() {
       <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
         {/* Editor */}
         <div style={{ flex: 1, overflow: 'hidden' }}>
-          <Editor code={editorCode} onChange={setEditorCode} />
+          <Editor
+            code={editorCode}
+            onChange={setEditorCode}
+            onRegisterHighlight={(fn) => { highlightRef.current = fn }}
+          />
         </div>
         <VisualizerPanel type={visualizer} isPlaying={isPlaying} />
       </div>
