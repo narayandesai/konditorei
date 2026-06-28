@@ -1,10 +1,13 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import './index.css'
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
 import { App } from './App.js'
+import { Player } from './components/Player.js'
+import './index.css'
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
+const slug = window.location.pathname.match(/^\/p\/([a-z0-9-]+)/)?.[1]
+
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    {slug ? <Player slug={slug} /> : <App />}
+  </StrictMode>
 )
