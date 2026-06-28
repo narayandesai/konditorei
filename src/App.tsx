@@ -78,7 +78,7 @@ export function App() {
           <Editor
             code={editorCode}
             onChange={setEditorCode}
-            onRegisterHighlight={(fn) => { highlightRef.current = fn }}
+            onRegisterHighlight={(fn) => { highlightRef.current = fn ?? null }}
           />
         </div>
         <VisualizerPanel type={visualizer} isPlaying={isPlaying} />

@@ -9,7 +9,7 @@ import { highlightExtension, highlightMiniLocations } from '@strudel/codemirror'
 interface EditorProps {
   code: string
   onChange: (code: string) => void
-  onRegisterHighlight?: (fn: (haps: unknown[], atTime: number) => void) => void
+  onRegisterHighlight?: (fn: ((haps: unknown[], atTime: number) => void) | null) => void
 }
 
 export function Editor({ code, onChange, onRegisterHighlight }: EditorProps) {
@@ -50,7 +50,7 @@ export function Editor({ code, onChange, onRegisterHighlight }: EditorProps) {
 
     return () => {
       view.destroy()
-      onRegisterHighlight?.((_haps, _atTime) => {})
+      onRegisterHighlight?.(null)
     }
   }, [])
 
