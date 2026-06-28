@@ -24,6 +24,16 @@ export function createDb(filename = process.env.DB_FILE ?? 'konditorei.db') {
       code TEXT NOT NULL,
       created_at INTEGER NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS publications (
+      id         INTEGER PRIMARY KEY AUTOINCREMENT,
+      song_id    INTEGER NOT NULL REFERENCES songs(id) ON DELETE CASCADE,
+      version_id INTEGER NOT NULL REFERENCES versions(id) ON DELETE RESTRICT,
+      slug       TEXT NOT NULL UNIQUE,
+      show_code  INTEGER NOT NULL DEFAULT 1,
+      created_at INTEGER NOT NULL,
+      updated_at INTEGER NOT NULL
+    );
   `)
   return db
 }
