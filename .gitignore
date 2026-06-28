@@ -1,0 +1,5 @@
+node_modules/
+dist/
+konditorei.db
+*.db-shm
+*.db-wal
