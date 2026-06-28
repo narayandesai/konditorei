@@ -44,6 +44,10 @@ export function versionsRouter(db: Db) {
 
   router.get('/:songId/versions/:v/diff', (req, res) => {
     const v = Number(req.params.v)
+    if (!Number.isInteger(v) || v < 1) {
+      res.status(400).json({ error: 'version must be a positive integer' })
+      return
+    }
     const rows = db
       .prepare('SELECT * FROM versions WHERE song_id = ? AND number IN (?, ?) ORDER BY number')
       .all(req.params.songId, v - 1, v) as unknown as VersionWithCode[]
