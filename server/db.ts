@@ -2,6 +2,7 @@ import { DatabaseSync } from 'node:sqlite'
 
 export function createDb(filename = 'konditorei.db') {
   const db = new DatabaseSync(filename)
+  db.exec('PRAGMA foreign_keys = ON;')
   db.exec(`
     CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -24,7 +25,6 @@ export function createDb(filename = 'konditorei.db') {
       created_at INTEGER NOT NULL
     );
   `)
-  db.exec('PRAGMA foreign_keys = ON;')
   return db
 }
 
