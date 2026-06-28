@@ -19,8 +19,11 @@ export function Visualizer({ type, isPlaying }: VisualizerProps) {
   useLayoutEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
-    canvas.width = canvas.offsetWidth
-    canvas.height = canvas.offsetHeight
+    const sync = () => { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight }
+    sync()
+    const ro = new ResizeObserver(sync)
+    ro.observe(canvas)
+    return () => ro.disconnect()
   }, [type])
 
   useEffect(() => {
