@@ -29,6 +29,12 @@ export function App() {
     setEditorCode(latestCode)
   }, [latestCode])
 
+  // Stop playback when the active song changes so we never layer two schedulers.
+  useEffect(() => {
+    strudel.reset()
+    setIsPlaying(false)
+  }, [activeSong?.id])
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <div style={{ height: 44, background: 'var(--bg-surface)', borderBottom: '1px solid var(--border)', flexShrink: 0 }}>
