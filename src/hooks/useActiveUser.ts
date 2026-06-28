@@ -14,7 +14,7 @@ export function useActiveUser() {
       const storedId = Number(localStorage.getItem(STORAGE_KEY))
       const found = all.find((u) => u.id === storedId) ?? all[0] ?? null
       setActiveUserState(found)
-    })
+    }).catch(() => { setUsers([]); setActiveUserState(null) })
   }, [])
 
   function setActiveUser(user: User) {

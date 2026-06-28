@@ -11,7 +11,7 @@ export function useSongs(userId: number | undefined) {
     api.songs.list(userId).then((all) => {
       setSongs(all)
       setActiveSong(all[0] ?? null)
-    })
+    }).catch(() => { setSongs([]); setActiveSong(null) })
   }, [userId])
 
   async function createSong(name: string): Promise<Song> {
