@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useActiveUser } from './hooks/useActiveUser.js'
 import { useSongs } from './hooks/useSongs.js'
 import { useVersions } from './hooks/useVersions.js'
@@ -23,6 +23,11 @@ export function App() {
   function handleError(e: StrudelError) {
     setStrudelError(e.message)
   }
+
+  // Sync editorCode whenever the server-loaded latestCode changes (initial load or song switch).
+  useEffect(() => {
+    setEditorCode(latestCode)
+  }, [latestCode])
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
