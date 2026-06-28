@@ -45,6 +45,8 @@ export function songsRouter(db: Db) {
   })
 
   router.delete('/:id', (req, res) => {
+    const song = db.prepare('SELECT id FROM songs WHERE id = ?').get(req.params.id)
+    if (!song) { res.status(404).json({ error: 'not found' }); return }
     db.prepare('DELETE FROM songs WHERE id = ?').run(req.params.id)
     res.status(204).send()
   })
