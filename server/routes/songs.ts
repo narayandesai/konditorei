@@ -24,6 +24,8 @@ export function songsRouter(db: Db) {
       res.status(400).json({ error: 'userId and name are required' })
       return
     }
+    const userExists = db.prepare('SELECT id FROM users WHERE id = ?').get(userId)
+    if (!userExists) { res.status(404).json({ error: 'user not found' }); return }
     const created_at = Date.now()
     const result = db
       .prepare('INSERT INTO songs (user_id, name, created_at) VALUES (?, ?, ?)')
