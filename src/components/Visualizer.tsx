@@ -36,6 +36,8 @@ export function Visualizer({ type, isPlaying }: VisualizerProps) {
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
+    let dataBuffer: Float32Array<ArrayBuffer> | null = null
+
     function drawScope() {
       if (!canvas || !ctx) return
       // getAnalyzerData populates the Float32Array and returns it.
@@ -54,7 +56,10 @@ export function Visualizer({ type, isPlaying }: VisualizerProps) {
         ctx.lineTo(canvas.width, y)
         ctx.stroke()
       } else {
-        const data = new Float32Array(analyser.frequencyBinCount)
+        if (!dataBuffer || dataBuffer.length !== analyser.frequencyBinCount) {
+          dataBuffer = new Float32Array(analyser.frequencyBinCount)
+        }
+        const data = dataBuffer
         analyser.getFloatTimeDomainData(data)
 
         ctx.strokeStyle = ACCENT
