@@ -1,4 +1,4 @@
-import type { User, Song, Version, VersionWithCode, DiffLine } from '../types.js'
+import type { User, Song, Version, VersionWithCode, DiffLine, Publication, PublicationPatch, PublicPlayerResponse } from '../types.js'
 
 const base = '/api'
 
@@ -30,5 +30,17 @@ export const api = {
     save: (songId: number, code: string) => req<VersionWithCode>('POST', `/songs/${songId}/versions`, { code }),
     diff: (songId: number, v: number) => req<DiffLine[]>('GET', `/songs/${songId}/versions/${v}/diff`),
     revert: (songId: number, v: number) => req<VersionWithCode>('POST', `/songs/${songId}/revert/${v}`),
+  },
+  publications: {
+    list: (songId: number) =>
+      req<Publication[]>('GET', `/songs/${songId}/publications`),
+    create: (songId: number, body: { version_id: number; slug?: string; show_code?: 0 | 1 }) =>
+      req<Publication>('POST', `/songs/${songId}/publications`, body),
+    update: (id: number, patch: PublicationPatch) =>
+      req<Publication>('PATCH', `/publications/${id}`, patch),
+    delete: (id: number) =>
+      req<void>('DELETE', `/publications/${id}`),
+    getBySlug: (slug: string) =>
+      req<PublicPlayerResponse>('GET', `/p/${slug}`),
   },
 }
