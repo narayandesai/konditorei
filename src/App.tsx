@@ -36,7 +36,6 @@ export function App() {
           activeSong={activeSong}
           onSongSelect={setActiveSong}
           onCreateSong={createSong}
-          onRenameSong={renameSong}
           onDeleteSong={deleteSong}
           latestVersion={versions[versions.length - 1] ?? null}
           onShowVersions={() => setShowVersionModal(true)}
@@ -45,6 +44,7 @@ export function App() {
           onPlay={() => {
             strudel.evaluate(editorCode, handleError)
               .then(() => { strudel.start(handleError); setIsPlaying(true) })
+              .catch((e: unknown) => handleError({ message: String(e) }))
           }}
           onStop={() => {
             strudel.stop(handleError)

@@ -15,7 +15,8 @@ export function VersionModal({ songId, versions, onRevert, onClose }: VersionMod
 
   useEffect(() => {
     if (!selectedV) return
-    api.versions.diff(songId, selectedV).then(setDiff)
+    setDiff([])
+    api.versions.diff(songId, selectedV).then(setDiff).catch(() => setDiff([]))
   }, [songId, selectedV])
 
   const selectedVersion = versions.find((v) => v.number === selectedV)

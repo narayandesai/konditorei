@@ -10,7 +10,12 @@ export function Visualizer({ type, isPlaying }: VisualizerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
-    if (type === 'none' || !canvasRef.current || !isPlaying) return
+    const canvas = canvasRef.current
+    if (type === 'none' || !canvas) return
+    // Sync canvas buffer size to its CSS-rendered size so drawing won't be blurry.
+    canvas.width = canvas.offsetWidth
+    canvas.height = canvas.offsetHeight
+    if (!isPlaying) return
     // Strudel draw integration: check @strudel/draw or @strudel/pianoroll
     // for the canvas API once visualizer packages are available.
     // The canvas is wired up here and ready to receive draw callbacks.

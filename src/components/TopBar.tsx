@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import type { User, Song, Version } from '../types.js'
 
 export type Visualizer = 'none' | 'pianoroll' | 'scope' | 'spiral'
@@ -12,7 +12,6 @@ interface TopBarProps {
   activeSong: Song | null
   onSongSelect: (song: Song) => void
   onCreateSong: (name: string) => void
-  onRenameSong: (id: number, name: string) => void
   onDeleteSong: (id: number) => void
   latestVersion: Version | null
   onShowVersions: () => void
@@ -26,13 +25,24 @@ interface TopBarProps {
 
 export function TopBar({
   users, activeUser, onUserSelect, onCreateUser,
-  songs, activeSong, onSongSelect, onCreateSong, onRenameSong, onDeleteSong,
+  songs, activeSong, onSongSelect, onCreateSong, onDeleteSong,
   latestVersion, onShowVersions,
   onSaveVersion, isPlaying, onPlay, onStop,
   visualizer, onVisualizerChange,
 }: TopBarProps) {
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [songMenuOpen, setSongMenuOpen] = useState(false)
+  const userMenuRef = useRef<HTMLDivElement>(null)
+  const songMenuRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) setUserMenuOpen(false)
+      if (songMenuRef.current && !songMenuRef.current.contains(e.target as Node)) setSongMenuOpen(false)
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
 
   const ts = latestVersion
     ? new Date(latestVersion.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
@@ -44,7 +54,7 @@ export function TopBar({
       <span style={{ color: 'var(--border)' }}>|</span>
 
       {/* User switcher */}
-      <div style={{ position: 'relative' }}>
+      <div ref={userMenuRef} style={{ position: 'relative' }}>
         <button
           onClick={() => setUserMenuOpen((o) => !o)}
           style={{ background: 'var(--bg-overlay)', border: '1px solid var(--border)', color: 'var(--text-primary)', padding: '3px 10px', borderRadius: 4 }}
@@ -70,7 +80,7 @@ export function TopBar({
       <span style={{ color: 'var(--border)' }}>|</span>
 
       {/* Song selector */}
-      <div style={{ position: 'relative' }}>
+      <div ref={songMenuRef} style={{ position: 'relative' }}>
         <button
           onClick={() => setSongMenuOpen((o) => !o)}
           style={{ background: 'var(--bg-overlay)', border: '1px solid var(--border)', color: 'var(--text-primary)', padding: '3px 10px', borderRadius: 4, minWidth: 140 }}
@@ -129,11 +139,11 @@ export function TopBar({
         </button>
 
         {!isPlaying ? (
-          <button onClick={onPlay} style={{ background: '#238636', border: 'none', color: '#fff', padding: '4px 14px', borderRadius: 4 }}>
+          <button onClick={onPlay} style={{ background: 'var(--green)', border: 'none', color: '#fff', padding: '4px 14px', borderRadius: 4 }}>
             ▶ Play
           </button>
         ) : (
-          <button onClick={onStop} style={{ background: '#da3633', border: 'none', color: '#fff', padding: '4px 14px', borderRadius: 4 }}>
+          <button onClick={onStop} style={{ background: 'var(--red)', border: 'none', color: '#fff', padding: '4px 14px', borderRadius: 4 }}>
             ■ Stop
           </button>
         )}
