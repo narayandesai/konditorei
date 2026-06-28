@@ -16,6 +16,9 @@ export function VersionModal({ songId, versions, onRevert, onClose }: VersionMod
   // If a new version is saved while the modal is open and selectedV was the latest,
   // follow the selection to the new latest so the revert button doesn't appear erroneously.
   const prevLatestRef = useRef(versions[versions.length - 1]?.number)
+  // Intentionally depends only on versions: we want to follow the selection to
+  // the new latest only when the list grows, not on every selectedV change.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const newLatest = versions[versions.length - 1]?.number
     if (newLatest === undefined) return
@@ -26,7 +29,6 @@ export function VersionModal({ songId, versions, onRevert, onClose }: VersionMod
   }, [versions])
 
   useEffect(() => {
-    if (!selectedV) return
     setDiff([])
     api.versions.diff(songId, selectedV).then(setDiff).catch(() => setDiff([]))
   }, [songId, selectedV])
