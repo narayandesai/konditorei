@@ -34,6 +34,8 @@ export async function evaluate(
   onError: (e: StrudelError) => void,
 ): Promise<void> {
   try {
+    // Always stop before re-evaluating to prevent stacked schedulers.
+    strudelInstance?.stop()
     await getInstance(onError).evaluate(code)
   } catch (e) {
     onError({ message: String(e) })
@@ -45,5 +47,10 @@ export function start(onError: (e: StrudelError) => void): void {
 }
 
 export function stop(onError: (e: StrudelError) => void): void {
-  getInstance(onError).stop()
+  strudelInstance?.stop()
+}
+
+export function reset(): void {
+  strudelInstance?.stop()
+  strudelInstance = null
 }
