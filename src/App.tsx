@@ -65,7 +65,7 @@ export function App() {
               .catch((e: unknown) => handleError({ message: String(e) }))
           }}
           onStop={() => {
-            strudel.stop(handleError)
+            strudel.stop()
             setIsPlaying(false)
           }}
           visualizer={visualizer}

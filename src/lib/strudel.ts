@@ -55,7 +55,7 @@ export function start(onError: (e: StrudelError) => void): void {
   getInstance(onError).start()
 }
 
-export function stop(onError: (e: StrudelError) => void): void {
+export function stop(): void {
   strudelInstance?.stop()
 }
 
