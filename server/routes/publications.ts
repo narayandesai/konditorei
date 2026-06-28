@@ -5,16 +5,17 @@ import type { Publication, PublicPlayerResponse } from '../../src/types.js'
 
 function generateSlug(db: Db): string {
   const chars = 'abcdefghijklmnopqrstuvwxyz0123456789'
-  for (;;) {
+  for (let i = 0; i < 20; i++) {
     const slug = Array.from({ length: 6 }, () =>
       chars[Math.floor(Math.random() * chars.length)]
     ).join('')
     if (!db.prepare('SELECT id FROM publications WHERE slug = ?').get(slug)) return slug
   }
+  throw new Error('slug generation failed after 20 attempts')
 }
 
 function isValidSlug(s: string): boolean {
-  return /^[a-z0-9-]{3,40}$/.test(s)
+  return /^[a-z0-9][a-z0-9-]{1,38}[a-z0-9]$/.test(s) || /^[a-z0-9]{3,40}$/.test(s)
 }
 
 export function songPublicationsRouter(db: Db) {
@@ -34,12 +35,19 @@ export function songPublicationsRouter(db: Db) {
     if (songId === null) { res.status(400).json({ error: 'songId must be a positive integer' }); return }
 
     const { version_id, slug: customSlug, show_code = 1 } = req.body
-    if (!version_id) { res.status(400).json({ error: 'version_id is required' }); return }
+    if (version_id === undefined || version_id === null) {
+      res.status(400).json({ error: 'version_id is required' }); return
+    }
+    const vid = parsePositiveInt(String(version_id))
+    if (vid === null) { res.status(400).json({ error: 'version_id must be a positive integer' }); return }
+    if (show_code !== 0 && show_code !== 1) {
+      res.status(400).json({ error: 'show_code must be 0 or 1' }); return
+    }
 
     const song = db.prepare('SELECT id FROM songs WHERE id = ?').get(songId)
     if (!song) { res.status(404).json({ error: 'song not found' }); return }
 
-    const version = db.prepare('SELECT id FROM versions WHERE id = ? AND song_id = ?').get(version_id, songId)
+    const version = db.prepare('SELECT id FROM versions WHERE id = ? AND song_id = ?').get(vid, songId)
     if (!version) { res.status(404).json({ error: 'version not found' }); return }
 
     let slug: string
@@ -60,7 +68,7 @@ export function songPublicationsRouter(db: Db) {
       .prepare(
         'INSERT INTO publications (song_id, version_id, slug, show_code, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)'
       )
-      .run(songId, version_id, slug, show_code ? 1 : 0, now, now)
+      .run(songId, vid, slug, show_code, now, now)
 
     const pub = db.prepare('SELECT * FROM publications WHERE id = ?').get(result.lastInsertRowid) as unknown as Publication
     res.status(201).json(pub)
@@ -126,6 +134,7 @@ export function publicPlayerRouter(db: Db) {
   const router = Router()
 
   router.get('/p/:slug', (req, res) => {
+    if (!isValidSlug(req.params.slug)) { res.status(404).json({ error: 'not found' }); return }
     const row = db.prepare(`
       SELECT p.id, p.slug, p.show_code,
              v.code, v.number AS version_number,
