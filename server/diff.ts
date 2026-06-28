@@ -19,15 +19,15 @@ export function diffLines(oldCode: string, newCode: string): DiffLine[] {
   let i = m, j = n
   while (i > 0 || j > 0) {
     if (i > 0 && j > 0 && oldLines[i - 1] === newLines[j - 1]) {
-      result.unshift({ type: 'unchanged', text: oldLines[i - 1] })
+      result.push({ type: 'unchanged', text: oldLines[i - 1] })
       i--; j--
     } else if (j > 0 && (i === 0 || dp[i][j - 1] >= dp[i - 1][j])) {
-      result.unshift({ type: 'added', text: newLines[j - 1] })
+      result.push({ type: 'added', text: newLines[j - 1] })
       j--
     } else {
-      result.unshift({ type: 'removed', text: oldLines[i - 1] })
+      result.push({ type: 'removed', text: oldLines[i - 1] })
       i--
     }
   }
-  return result
+  return result.reverse()
 }
