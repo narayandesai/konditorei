@@ -69,7 +69,7 @@ export function App() {
       <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
         {/* Editor */}
         <div style={{ flex: 1, overflow: 'hidden' }}>
-          <Editor code={latestCode} onChange={setEditorCode} />
+          <Editor code={editorCode} onChange={setEditorCode} />
         </div>
         <VisualizerPanel type={visualizer} isPlaying={isPlaying} />
       </div>
