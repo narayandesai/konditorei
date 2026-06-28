@@ -30,9 +30,13 @@ export function useSongs(userId: number | undefined) {
 
   async function deleteSong(id: number) {
     await api.songs.delete(id)
-    const remaining = songs.filter((s) => s.id !== id)
-    setSongs(remaining)
-    if (activeSong?.id === id) setActiveSong(remaining[0] ?? null)
+    setSongs((prev) => {
+      const remaining = prev.filter((s) => s.id !== id)
+      // Side-effect in updater is intentional: keeps activeSong in sync without
+      // a stale closure over the songs snapshot from before the await.
+      setActiveSong((cur) => (cur?.id === id ? remaining[0] ?? null : cur))
+      return remaining
+    })
   }
 
   return { songs, activeSong, setActiveSong, createSong, renameSong, deleteSong }
