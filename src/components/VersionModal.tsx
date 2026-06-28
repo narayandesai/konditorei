@@ -23,8 +23,9 @@ export function VersionModal({ songId, versions, onRevert, onClose }: VersionMod
     const newLatest = versions[versions.length - 1]?.number
     if (newLatest === undefined) return
     if (prevLatestRef.current === undefined) {
-      // versions weren't available at mount (async load); sync selection to actual latest
-      setSelectedV(newLatest)
+      // versions weren't available at mount (async load); sync to latest only if the
+      // user hasn't made an explicit selection (selectedV still at the default of 1).
+      if (selectedV === 1) setSelectedV(newLatest)
     } else if (selectedV === prevLatestRef.current && selectedV !== newLatest) {
       setSelectedV(newLatest)
     }
