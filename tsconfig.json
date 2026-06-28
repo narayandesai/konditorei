@@ -7,9 +7,8 @@
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "outDir": "dist-server",
     "rootDir": ".",
     "baseUrl": "."
   },
-  "include": ["src", "server"]
+  "include": ["src", "server", "server/tests"]
 }
