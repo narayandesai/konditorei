@@ -14,7 +14,7 @@ export function songsRouter(db: Db) {
     }
     const songs = db
       .prepare('SELECT * FROM songs WHERE user_id = ? ORDER BY created_at DESC')
-      .all(Number(userId)) as Song[]
+      .all(Number(userId)) as unknown as Song[]
     res.json(songs)
   })
 
@@ -28,7 +28,7 @@ export function songsRouter(db: Db) {
     const result = db
       .prepare('INSERT INTO songs (user_id, name, created_at) VALUES (?, ?, ?)')
       .run(userId, name, created_at)
-    const song = db.prepare('SELECT * FROM songs WHERE id = ?').get(result.lastInsertRowid) as Song
+    const song = db.prepare('SELECT * FROM songs WHERE id = ?').get(result.lastInsertRowid) as unknown as Song
     res.status(201).json(song)
   })
 
@@ -38,7 +38,7 @@ export function songsRouter(db: Db) {
       res.status(400).json({ error: 'name is required' })
       return
     }
-    const song = db.prepare('SELECT * FROM songs WHERE id = ?').get(req.params.id) as Song | undefined
+    const song = db.prepare('SELECT * FROM songs WHERE id = ?').get(req.params.id) as unknown as Song | undefined
     if (!song) { res.status(404).json({ error: 'not found' }); return }
     db.prepare('UPDATE songs SET name = ? WHERE id = ?').run(name, req.params.id)
     res.json({ ...song, name })

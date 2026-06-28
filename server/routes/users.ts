@@ -7,7 +7,7 @@ export function usersRouter(db: Db) {
   const router = Router()
 
   router.get('/', (_req, res) => {
-    const users = db.prepare('SELECT * FROM users ORDER BY created_at').all() as User[]
+    const users = db.prepare('SELECT * FROM users ORDER BY created_at').all() as unknown as User[]
     res.json(users)
   })
 
@@ -19,7 +19,7 @@ export function usersRouter(db: Db) {
     }
     const created_at = Date.now()
     const result = db.prepare('INSERT INTO users (name, created_at) VALUES (?, ?)').run(name, created_at)
-    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(result.lastInsertRowid) as User
+    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(result.lastInsertRowid) as unknown as User
     res.status(201).json(user)
   })
 
