@@ -28,6 +28,8 @@ export function versionsRouter(db: Db) {
       res.status(400).json({ error: 'code is required' })
       return
     }
+    const songExists = db.prepare('SELECT id FROM songs WHERE id = ?').get(req.params.songId)
+    if (!songExists) { res.status(404).json({ error: 'song not found' }); return }
     const last = db
       .prepare('SELECT number FROM versions WHERE song_id = ? ORDER BY number DESC LIMIT 1')
       .get(req.params.songId) as unknown as { number: number } | undefined
