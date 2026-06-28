@@ -61,6 +61,21 @@ describe('versions', () => {
     expect(res.body).toContainEqual({ type: 'added', text: '.fast(2)' })
   })
 
+  it('GET /api/songs/:id/versions/:v/diff returns 400 for non-integer v', async () => {
+    const res = await request(app).get(`/api/songs/${songId}/versions/abc/diff`)
+    expect(res.status).toBe(400)
+  })
+
+  it('GET /api/songs/:id/versions/:v/diff returns 400 for v=0', async () => {
+    const res = await request(app).get(`/api/songs/${songId}/versions/0/diff`)
+    expect(res.status).toBe(400)
+  })
+
+  it('POST /api/songs/:id/versions returns 404 for nonexistent song', async () => {
+    const res = await request(app).post('/api/songs/999/versions').send({ code: 'x' })
+    expect(res.status).toBe(404)
+  })
+
   it('POST /api/songs/:id/revert/:v creates a new version with old code', async () => {
     await request(app).post(`/api/songs/${songId}/versions`).send({ code: 'original' })
     await request(app).post(`/api/songs/${songId}/versions`).send({ code: 'changed' })
