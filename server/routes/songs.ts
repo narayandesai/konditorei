@@ -8,8 +8,8 @@ export function songsRouter(db: Db) {
 
   router.get('/', (req, res) => {
     const { userId } = req.query
-    if (!userId) {
-      res.status(400).json({ error: 'userId is required' })
+    if (!userId || isNaN(Number(userId))) {
+      res.status(400).json({ error: 'userId must be a number' })
       return
     }
     const songs = db
@@ -38,10 +38,10 @@ export function songsRouter(db: Db) {
       res.status(400).json({ error: 'name is required' })
       return
     }
-    db.prepare('UPDATE songs SET name = ? WHERE id = ?').run(name, req.params.id)
     const song = db.prepare('SELECT * FROM songs WHERE id = ?').get(req.params.id) as Song | undefined
     if (!song) { res.status(404).json({ error: 'not found' }); return }
-    res.json(song)
+    db.prepare('UPDATE songs SET name = ? WHERE id = ?').run(name, req.params.id)
+    res.json({ ...song, name })
   })
 
   router.delete('/:id', (req, res) => {
