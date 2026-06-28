@@ -3,6 +3,7 @@ import { useActiveUser } from './hooks/useActiveUser.js'
 import { useSongs } from './hooks/useSongs.js'
 import { useVersions } from './hooks/useVersions.js'
 import { TopBar, type Visualizer } from './components/TopBar.js'
+import { Editor } from './components/Editor.js'
 import * as strudel from './lib/strudel.js'
 import type { StrudelError } from './lib/strudel.js'
 
@@ -52,8 +53,10 @@ export function App() {
         />
       </div>
       <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-        {/* Editor — Task 16 */}
-        <div style={{ flex: 1, padding: 16, color: 'var(--text-secondary)' }}>Editor placeholder (code: {latestCode.length} chars)</div>
+        {/* Editor */}
+        <div style={{ flex: 1, overflow: 'hidden' }}>
+          <Editor code={latestCode} onChange={setEditorCode} />
+        </div>
         {/* Visualizer — Task 18 */}
       </div>
       {strudelError && (
