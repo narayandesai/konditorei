@@ -34,6 +34,9 @@ export function createDb(filename = process.env.DB_FILE ?? 'konditorei.db') {
       created_at INTEGER NOT NULL,
       updated_at INTEGER NOT NULL
     );
+
+    CREATE INDEX IF NOT EXISTS idx_publications_song_id ON publications(song_id);
+    CREATE INDEX IF NOT EXISTS idx_publications_version_id ON publications(version_id);
   `)
   return db
 }
