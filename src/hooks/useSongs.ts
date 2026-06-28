@@ -14,6 +14,15 @@ export function useSongs(userId: number | undefined) {
     }).catch(() => { setSongs([]); setActiveSong(null) })
   }, [userId])
 
+  // Keep activeSong in sync when it's no longer present in the songs list
+  // (e.g. after a delete resolves). Avoids calling setActiveSong as a side
+  // effect inside a setSongs updater, which is unsafe in Strict Mode.
+  useEffect(() => {
+    if (activeSong && !songs.find((s) => s.id === activeSong.id)) {
+      setActiveSong(songs[0] ?? null)
+    }
+  }, [songs, activeSong])
+
   async function createSong(name: string): Promise<Song> {
     if (!userId) throw new Error('no active user')
     const song = await api.songs.create(userId, name)
@@ -30,13 +39,7 @@ export function useSongs(userId: number | undefined) {
 
   async function deleteSong(id: number) {
     await api.songs.delete(id)
-    setSongs((prev) => {
-      const remaining = prev.filter((s) => s.id !== id)
-      // Side-effect in updater is intentional: keeps activeSong in sync without
-      // a stale closure over the songs snapshot from before the await.
-      setActiveSong((cur) => (cur?.id === id ? remaining[0] ?? null : cur))
-      return remaining
-    })
+    setSongs((prev) => prev.filter((s) => s.id !== id))
   }
 
   return { songs, activeSong, setActiveSong, createSong, renameSong, deleteSong }
