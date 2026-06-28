@@ -5,7 +5,7 @@ import { useVersions } from './hooks/useVersions.js'
 import { TopBar, type Visualizer } from './components/TopBar.js'
 import { Editor } from './components/Editor.js'
 import { VersionModal } from './components/VersionModal.js'
-import { Visualizer } from './components/Visualizer.js'
+import { Visualizer as VisualizerPanel } from './components/Visualizer.js'
 import * as strudel from './lib/strudel.js'
 import type { StrudelError } from './lib/strudel.js'
 
@@ -59,7 +59,7 @@ export function App() {
         <div style={{ flex: 1, overflow: 'hidden' }}>
           <Editor code={latestCode} onChange={setEditorCode} />
         </div>
-        <Visualizer type={visualizer} isPlaying={isPlaying} />
+        <VisualizerPanel type={visualizer} isPlaying={isPlaying} />
       </div>
       {strudelError && (
         <div style={{ position: 'fixed', bottom: 16, right: 16, background: 'var(--red)', color: '#fff', padding: '8px 14px', borderRadius: 6, fontSize: 13 }}>
