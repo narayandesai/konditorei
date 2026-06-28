@@ -15,9 +15,13 @@ export function versionsRouter(db: Db) {
   })
 
   router.get('/:songId/versions/:v', (req, res) => {
+    const v = Number(req.params.v)
+    if (!Number.isInteger(v) || v < 1) {
+      res.status(400).json({ error: 'version must be a positive integer' }); return
+    }
     const version = db
       .prepare('SELECT * FROM versions WHERE song_id = ? AND number = ?')
-      .get(req.params.songId, req.params.v) as unknown as VersionWithCode | undefined
+      .get(req.params.songId, v) as unknown as VersionWithCode | undefined
     if (!version) { res.status(404).json({ error: 'not found' }); return }
     res.json(version)
   })
