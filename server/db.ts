@@ -1,6 +1,6 @@
 import { DatabaseSync } from 'node:sqlite'
 
-export function createDb(filename = 'konditorei.db') {
+export function createDb(filename = process.env.DB_FILE ?? 'konditorei.db') {
   const db = new DatabaseSync(filename)
   db.exec('PRAGMA foreign_keys = ON;')
   db.exec(`
