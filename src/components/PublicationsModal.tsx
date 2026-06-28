@@ -113,7 +113,7 @@ export function PublicationsModal({
                       {origin}/p/{selected.slug}
                     </code>
                     <button
-                      onClick={() => navigator.clipboard.writeText(`${origin}/p/{selected.slug}`)}
+                      onClick={() => navigator.clipboard.writeText(`${origin}/p/${selected.slug}`)}
                       style={{ background: 'none', border: '1px solid var(--border)', color: 'var(--text-secondary)', padding: '4px 10px', borderRadius: 4, fontSize: 12, flexShrink: 0 }}
                     >
                       Copy
