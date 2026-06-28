@@ -1,0 +1,13 @@
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - db-data:/data
+    environment:
+      DB_FILE: /data/konditorei.db
+    restart: unless-stopped
+
+volumes:
+  db-data:
