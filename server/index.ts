@@ -1,21 +1,13 @@
-import express from 'express'
 import { createServer as createViteServer } from 'vite'
 import { createDb } from './db.js'
-import { usersRouter } from './routes/users.js'
-import { songsRouter } from './routes/songs.js'
-import { versionsRouter } from './routes/versions.js'
+import { createApp } from './app.js'
 
 const PORT = 3000
 const isProd = process.env.NODE_ENV === 'production'
 
 async function main() {
   const db = createDb()
-  const app = express()
-  app.use(express.json())
-
-  app.use('/api/users', usersRouter(db))
-  app.use('/api/songs', songsRouter(db))
-  app.use('/api/songs', versionsRouter(db))
+  const app = createApp(db)
 
   if (isProd) {
     const { default: sirv } = await import('sirv')
