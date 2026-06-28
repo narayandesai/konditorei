@@ -47,6 +47,7 @@ export function App() {
           activeSong={activeSong}
           onSongSelect={setActiveSong}
           onCreateSong={createSong}
+          onRenameSong={renameSong}
           onDeleteSong={deleteSong}
           latestVersion={versions[versions.length - 1] ?? null}
           onShowVersions={() => setShowVersionModal(true)}

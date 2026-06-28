@@ -12,6 +12,7 @@ interface TopBarProps {
   activeSong: Song | null
   onSongSelect: (song: Song) => void
   onCreateSong: (name: string) => void
+  onRenameSong: (id: number, name: string) => void
   onDeleteSong: (id: number) => void
   latestVersion: Version | null
   onShowVersions: () => void
@@ -25,7 +26,7 @@ interface TopBarProps {
 
 export function TopBar({
   users, activeUser, onUserSelect, onCreateUser,
-  songs, activeSong, onSongSelect, onCreateSong, onDeleteSong,
+  songs, activeSong, onSongSelect, onCreateSong, onRenameSong, onDeleteSong,
   latestVersion, onShowVersions,
   onSaveVersion, isPlaying, onPlay, onStop,
   visualizer, onVisualizerChange,
@@ -95,8 +96,14 @@ export function TopBar({
                   style={{ flex: 1, padding: '8px 12px', cursor: 'pointer', color: s.id === activeSong?.id ? 'var(--accent)' : 'var(--text-primary)' }}
                 >{s.name}</div>
                 <button
+                  onClick={(e) => { e.stopPropagation(); const name = prompt('Rename song:', s.name); if (name && name !== s.name) onRenameSong(s.id, name) }}
+                  style={{ background: 'none', border: 'none', color: 'var(--text-muted)', padding: '6px 4px' }}
+                  title="Rename"
+                >✎</button>
+                <button
                   onClick={(e) => { e.stopPropagation(); if (confirm(`Delete "${s.name}"?`)) { onDeleteSong(s.id); setSongMenuOpen(false) } }}
-                  style={{ background: 'none', border: 'none', color: 'var(--text-muted)', padding: '8px' }}
+                  style={{ background: 'none', border: 'none', color: 'var(--text-muted)', padding: '6px 8px' }}
+                  title="Delete"
                 >✕</button>
               </div>
             ))}
