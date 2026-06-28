@@ -22,7 +22,10 @@ export function VersionModal({ songId, versions, onRevert, onClose }: VersionMod
   useEffect(() => {
     const newLatest = versions[versions.length - 1]?.number
     if (newLatest === undefined) return
-    if (selectedV === prevLatestRef.current && selectedV !== newLatest) {
+    if (prevLatestRef.current === undefined) {
+      // versions weren't available at mount (async load); sync selection to actual latest
+      setSelectedV(newLatest)
+    } else if (selectedV === prevLatestRef.current && selectedV !== newLatest) {
       setSelectedV(newLatest)
     }
     prevLatestRef.current = newLatest
