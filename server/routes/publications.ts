@@ -98,17 +98,24 @@ export function publicationsMutationRouter(db: Db) {
       }
     }
 
+    if (show_code !== undefined && show_code !== 0 && show_code !== 1) {
+      res.status(400).json({ error: 'show_code must be 0 or 1' }); return
+    }
+
+    let vid: number | undefined = undefined
     if (version_id !== undefined) {
-      const version = db.prepare('SELECT id FROM versions WHERE id = ? AND song_id = ?').get(version_id, pub.song_id)
+      vid = parsePositiveInt(String(version_id)) ?? undefined
+      if (vid === undefined) { res.status(400).json({ error: 'version_id must be a positive integer' }); return }
+      const version = db.prepare('SELECT id FROM versions WHERE id = ? AND song_id = ?').get(vid, pub.song_id)
       if (!version) { res.status(404).json({ error: 'version not found' }); return }
     }
 
     db.prepare(
       'UPDATE publications SET version_id = ?, slug = ?, show_code = ?, updated_at = ? WHERE id = ?'
     ).run(
-      version_id ?? pub.version_id,
+      vid ?? pub.version_id,
       newSlug ?? pub.slug,
-      show_code !== undefined ? (show_code ? 1 : 0) : pub.show_code,
+      show_code !== undefined ? show_code : pub.show_code,
       Date.now(),
       id
     )
@@ -146,7 +153,12 @@ export function publicPlayerRouter(db: Db) {
       WHERE p.slug = ?
     `).get(req.params.slug) as unknown as PublicPlayerResponse | undefined
     if (!row) { res.status(404).json({ error: 'not found' }); return }
-    res.json(row)
+    if (row.show_code === 0) {
+      const { code: _code, ...safe } = row
+      res.json(safe)
+    } else {
+      res.json(row)
+    }
   })
 
   return router

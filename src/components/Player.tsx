@@ -26,7 +26,7 @@ export function Player({ slug }: { slug: string }) {
     if (status !== 'ready' || !data || data.show_code !== 1 || !editorContainerRef.current) return
     const view = new EditorView({
       state: EditorState.create({
-        doc: data.code,
+        doc: data.code ?? '',
         extensions: [
           javascript(),
           oneDark,
@@ -75,8 +75,9 @@ export function Player({ slug }: { slug: string }) {
         <div style={{ marginBottom: 16 }}>
           {!isPlaying ? (
             <button
+              disabled={!d.code}
               onClick={() => {
-                strudel.evaluate(d.code, handleError)
+                strudel.evaluate(d.code ?? '', handleError)
                   .then(() => { strudel.start(handleError); setIsPlaying(true) })
                   .catch((e: unknown) => handleError({ message: String(e) }))
               }}

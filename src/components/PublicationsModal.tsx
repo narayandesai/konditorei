@@ -26,13 +26,23 @@ export function PublicationsModal({
     setSlugError(null)
   }, [selected?.id])
 
+  useEffect(() => {
+    if (selectedId === null && publications.length > 0) {
+      setSelectedId(publications[0].id)
+    }
+  }, [publications, selectedId])
+
   const latestVersion = versions[versions.length - 1]
   const origin = window.location.origin
 
   async function handleNew() {
     if (!latestVersion) return
-    const pub = await onCreatePublication(latestVersion.id)
-    setSelectedId(pub.id)
+    try {
+      const pub = await onCreatePublication(latestVersion.id)
+      setSelectedId(pub.id)
+    } catch {
+      setSlugError('Failed to create publication')
+    }
   }
 
   async function handleSlugBlur() {
@@ -173,6 +183,7 @@ export function PublicationsModal({
                 {/* Unpublish */}
                 <button
                   onClick={async () => {
+                    if (!confirm('Remove this publication? The URL will stop working immediately.')) return
                     await onDeletePublication(selected.id)
                     setSelectedId(null)
                   }}

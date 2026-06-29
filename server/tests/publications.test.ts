@@ -166,4 +166,14 @@ describe('publications', () => {
     const res = await request(app).get('/api/p/no-such-slug')
     expect(res.status).toBe(404)
   })
+
+  it('GET /api/p/:slug omits code when show_code is 0', async () => {
+    await request(app)
+      .post(`/api/songs/${songId}/publications`)
+      .send({ version_id: versionId, slug: 'hidden-code', show_code: 0 })
+    const res = await request(app).get('/api/p/hidden-code')
+    expect(res.status).toBe(200)
+    expect(res.body.show_code).toBe(0)
+    expect(res.body.code).toBeUndefined()
+  })
 })

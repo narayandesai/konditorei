@@ -9,7 +9,7 @@ export interface Song {
   user_id: number
   name: string
   created_at: number
-  publication_count?: number
+  publication_count: number
 }
 
 export interface Version {
@@ -50,6 +50,6 @@ export interface PublicPlayerResponse {
   song_name: string
   publisher_name: string
   version_number: number
-  code: string
+  code?: string
   show_code: 0 | 1
 }
