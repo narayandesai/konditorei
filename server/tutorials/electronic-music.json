@@ -1,0 +1,175 @@
+{
+  "id": "electronic-music",
+  "title": "Electronic Music with Strudel",
+  "description": "Build a driving electronic track from the ground up — kicks, bass lines, synths, and filters.",
+  "steps": [
+    {
+      "title": "The four-on-the-floor kick",
+      "content": "# The four-on-the-floor kick\n\nElectronic music is built on the kick drum. The classic pattern is four beats per cycle — one kick per beat.\n\nIn Strudel, `*4` inside a pattern string repeats the sample four times:\n\n```\ns(\"bd*4\")\n```\n\nPress **Play** and feel the pulse.",
+      "code": "s(\"bd*4\")",
+      "fitness": [
+        { "type": "play" }
+      ]
+    },
+    {
+      "title": "16th-note hi-hats",
+      "content": "# 16th-note hi-hats\n\nHi-hats running at 16th notes give electronic music its energy and forward motion. That's `*16` — four per beat.\n\nStack them with the kick:\n\n```\nstack(\n  s(\"bd*4\"),\n  s(\"hh*16\").gain(0.3)\n)\n```\n\n`.gain(0.3)` keeps the hats from overwhelming the kick.",
+      "code": "stack(\n  s(\"bd*4\"),\n  s(\"hh*16\").gain(0.3)\n)",
+      "fitness": [
+        { "type": "code_contains", "value": "hh" },
+        { "type": "play" }
+      ]
+    },
+    {
+      "title": "Snare on 2 and 4",
+      "content": "# Snare on 2 and 4\n\nThe snare or clap lands on beats 2 and 4 — that's the backbeat pattern of nearly all dance music.\n\nIn Strudel, `~` is a rest:\n\n```\ns(\"~ sd ~ sd\")\n```\n\nFour slots: rest, snare, rest, snare.\n\nAdd it to the stack and press Play.",
+      "code": "stack(\n  s(\"bd*4\"),\n  s(\"~ sd ~ sd\"),\n  s(\"hh*16\").gain(0.3)\n)",
+      "fitness": [
+        { "type": "code_contains", "value": "sd" },
+        { "type": "play" }
+      ]
+    },
+    {
+      "title": "Euclidean rhythms",
+      "content": "# Euclidean rhythms\n\n`.euclid(hits, slots)` distributes a number of hits as evenly as possible across a number of slots. It's a powerful way to create rhythms that feel natural but asymmetric.\n\nClassic examples:\n- `euclid(3, 8)` — the clave, tresillo\n- `euclid(5, 8)` — Cuban cinquillo\n- `euclid(7, 16)` — common in techno\n\nTry replacing the steady kick with a euclidean one:\n\n```\nstack(\n  s(\"bd\").euclid(5, 8),\n  s(\"~ sd ~ sd\"),\n  s(\"hh*16\").gain(0.3)\n)\n```",
+      "code": "stack(\n  s(\"bd\").euclid(5, 8),\n  s(\"~ sd ~ sd\"),\n  s(\"hh*16\").gain(0.3)\n)",
+      "fitness": [
+        { "type": "code_contains", "value": "euclid" },
+        { "type": "play" }
+      ]
+    },
+    {
+      "title": "Quiz: drum patterns",
+      "content": "# Check your understanding",
+      "fitness": [
+        {
+          "type": "quiz",
+          "question": "What does `s(\"bd*4\")` do?",
+          "options": [
+            "Plays a single bass drum hit",
+            "Plays 4 bass drum hits evenly across a cycle",
+            "Plays bass drum 4 times faster than normal speed",
+            "Plays 4 different drum samples"
+          ],
+          "answer": 1
+        },
+        {
+          "type": "quiz",
+          "question": "What does `.euclid(3, 8)` mean?",
+          "options": [
+            "Play for 3 cycles out of every 8",
+            "Play 3 hits spread evenly across 8 slots",
+            "Triple the speed over 8 bars",
+            "Repeat the pattern 8 times, skip 3"
+          ],
+          "answer": 1
+        }
+      ]
+    },
+    {
+      "title": "Synth bass",
+      "content": "# Synth bass\n\nUse `note()` with `.sound()` to play synthesised sounds instead of samples. The `\"sawtooth\"` waveform is the classic choice for electronic bass — bright and buzzy.\n\nBass notes live in the low octaves. `c2` is a common root:\n\n```\nnote(\"c2\").sound(\"sawtooth\").gain(0.7)\n```\n\nPress Play to hear it loop.",
+      "code": "note(\"c2\").sound(\"sawtooth\").gain(0.7)",
+      "fitness": [
+        { "type": "code_contains", "value": "sawtooth" },
+        { "type": "play" }
+      ]
+    },
+    {
+      "title": "Bass line",
+      "content": "# Bass line\n\nA bass line moves through a few notes. Classic minor-tinged electronic progressions use the root, fifth, and flat seventh:\n\n```\nnote(\"c2 c2 g1 bb1\").sound(\"sawtooth\").gain(0.7)\n```\n\nTwo hits on C, then down to G and Bb — try it, then experiment with the pitches.",
+      "code": "note(\"c2 c2 g1 bb1\").sound(\"sawtooth\").gain(0.7)",
+      "fitness": [
+        { "type": "code_contains", "value": "g1" },
+        { "type": "play" }
+      ]
+    },
+    {
+      "title": "Low-pass filter",
+      "content": "# Low-pass filter\n\n`.lpf(frequency)` cuts all frequencies above the cutoff — making the sound darker and more submerged. Lower values = darker.\n\nAdding a filter transforms the sawtooth from harsh to warm:\n\n```\nnote(\"c2 c2 g1 bb1\")\n  .sound(\"sawtooth\")\n  .lpf(400)\n  .gain(0.7)\n```\n\nTry values between 200 (very dark) and 2000 (bright).",
+      "code": "note(\"c2 c2 g1 bb1\")\n  .sound(\"sawtooth\")\n  .lpf(400)\n  .gain(0.7)",
+      "fitness": [
+        { "type": "code_contains", "value": ".lpf(" },
+        { "type": "play" }
+      ]
+    },
+    {
+      "title": "Filter sweep",
+      "content": "# Filter sweep\n\nThe filter cutoff can itself be a pattern — swapping values each cycle for that classic \"filter opening up\" effect:\n\n```\nnote(\"c2 c2 g1 bb1\")\n  .sound(\"sawtooth\")\n  .lpf(\"<300 600 1000 1800>\")\n  .gain(0.7)\n```\n\nAngle brackets cycle through values: 300 → 600 → 1000 → 1800, one per cycle. The filter opens over four bars then resets.",
+      "code": "note(\"c2 c2 g1 bb1\")\n  .sound(\"sawtooth\")\n  .lpf(\"<300 600 1000 1800>\")\n  .gain(0.7)",
+      "fitness": [
+        { "type": "code_contains", "value": "<" },
+        { "type": "play" }
+      ]
+    },
+    {
+      "title": "Lead synth",
+      "content": "# Lead synth\n\nA `\"square\"` wave has a hollow, nasal tone — great for leads. Keep it high in the mix with `.gain()` lower than the bass:\n\n```\nnote(\"c4 eb4 g4 bb4\")\n  .sound(\"square\")\n  .gain(0.35)\n  .room(0.4)\n```\n\n`.room()` adds reverb — leads often sit in a bigger space than the bass.\n\nThis plays a Cm7 arpeggio. Change the notes to find your melody.",
+      "code": "note(\"c4 eb4 g4 bb4\")\n  .sound(\"square\")\n  .gain(0.35)\n  .room(0.4)",
+      "fitness": [
+        { "type": "code_contains", "value": "square" },
+        { "type": "play" }
+      ]
+    },
+    {
+      "title": "Build the full track",
+      "content": "# Build the full track\n\nNow stack everything together. Listen for how each layer sits in the mix — adjust `.gain()` values until it feels balanced:\n\n```\nstack(\n  s(\"bd*4\"),\n  s(\"~ sd ~ sd\"),\n  s(\"hh*16\").gain(0.25),\n  note(\"c2 c2 g1 bb1\")\n    .sound(\"sawtooth\")\n    .lpf(\"<300 600 1000 1800>\")\n    .gain(0.65),\n  note(\"<c4 eb4> <g4 bb4> c5 ~\")\n    .sound(\"square\")\n    .gain(0.3)\n    .room(0.4)\n)\n```\n\nThe lead uses alternation and a rest for breathing room.",
+      "code": "stack(\n  s(\"bd*4\"),\n  s(\"~ sd ~ sd\"),\n  s(\"hh*16\").gain(0.25),\n  note(\"c2 c2 g1 bb1\")\n    .sound(\"sawtooth\")\n    .lpf(\"<300 600 1000 1800>\")\n    .gain(0.65),\n  note(\"<c4 eb4> <g4 bb4> c5 ~\")\n    .sound(\"square\")\n    .gain(0.3)\n    .room(0.4)\n)",
+      "fitness": [
+        { "type": "code_contains", "value": "stack(" },
+        { "type": "play" }
+      ]
+    },
+    {
+      "title": "Delay on the lead",
+      "content": "# Delay\n\n`.delay(amount)` adds an echo effect. Combined with `.delaytime()`, you can sync the echo to the rhythm:\n\n```\nnote(\"<c4 eb4> <g4 bb4> c5 ~\")\n  .sound(\"square\")\n  .gain(0.3)\n  .room(0.3)\n  .delay(0.4)\n  .delaytime(0.125)\n```\n\n`.delaytime(0.125)` is an eighth note at 120 BPM — the echo falls on the offbeat, a classic electronic effect.\n\nAdd this to your full stack.",
+      "code": "stack(\n  s(\"bd*4\"),\n  s(\"~ sd ~ sd\"),\n  s(\"hh*16\").gain(0.25),\n  note(\"c2 c2 g1 bb1\")\n    .sound(\"sawtooth\")\n    .lpf(\"<300 600 1000 1800>\")\n    .gain(0.65),\n  note(\"<c4 eb4> <g4 bb4> c5 ~\")\n    .sound(\"square\")\n    .gain(0.3)\n    .room(0.3)\n    .delay(0.4)\n    .delaytime(0.125)\n)",
+      "fitness": [
+        { "type": "code_contains", "value": ".delay(" },
+        { "type": "play" }
+      ]
+    },
+    {
+      "title": "Quiz: synthesis and effects",
+      "content": "# Final check",
+      "fitness": [
+        {
+          "type": "quiz",
+          "question": "What does `.lpf(400)` do to a sound?",
+          "options": [
+            "Boosts frequencies above 400 Hz",
+            "Cuts frequencies above 400 Hz, making the sound darker",
+            "Sets the playback speed to 400 BPM",
+            "Adds 400ms of reverb"
+          ],
+          "answer": 1
+        },
+        {
+          "type": "quiz",
+          "question": "Which waveform is the classic choice for electronic bass?",
+          "options": ["sine", "square", "sawtooth", "triangle"],
+          "answer": 2
+        },
+        {
+          "type": "quiz",
+          "question": "How do you make `.lpf()` sweep through different values each cycle?",
+          "options": [
+            ".lpf(300).lpf(600).lpf(1000)",
+            ".lpf(\"<300 600 1000>\")",
+            ".lpf().sweep(300, 1000)",
+            ".lpf(300 + cycle * 200)"
+          ],
+          "answer": 1
+        }
+      ]
+    },
+    {
+      "title": "Make it yours",
+      "content": "# Make it yours\n\nYou've built a complete electronic track. Here's what you can change right now:\n\n- **Kick pattern**: try `s(\"bd\").euclid(4, 8)` or `s(\"bd bd ~ bd\")`\n- **Bass notes**: swap `c2 c2 g1 bb1` for something darker (`f1`) or brighter (`c2 e2`)\n- **Filter range**: push the sweep higher (`<200 800 2000 4000>`) for more drama\n- **Lead melody**: change `c4 eb4 g4 bb4` to any notes — try majors (`c4 e4 g4 b4`)\n- **Speed**: add `.fast(2)` to the hi-hats for a double-time feel\n- **Drop**: remove the lead line, let the rhythm breathe, then bring it back\n\nLive coding is about change — everything is one edit away.",
+      "code": "stack(\n  s(\"bd\").euclid(4, 8),\n  s(\"~ sd ~ sd\"),\n  s(\"hh*16\").gain(0.25),\n  note(\"c2 c2 g1 bb1\")\n    .sound(\"sawtooth\")\n    .lpf(\"<200 500 1200 2400>\")\n    .gain(0.65),\n  note(\"<c4 eb4> <g4 bb4> c5 ~\")\n    .sound(\"square\")\n    .gain(0.3)\n    .room(0.3)\n    .delay(0.4)\n    .delaytime(0.125)\n)",
+      "fitness": [
+        { "type": "play" }
+      ]
+    }
+  ]
+}
