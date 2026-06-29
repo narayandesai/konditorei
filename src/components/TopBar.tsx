@@ -23,6 +23,9 @@ interface TopBarProps {
   onStop: () => void
   visualizer: Visualizer
   onVisualizerChange: (v: Visualizer) => void
+  onTutorialOpen: () => void
+  activeTutorialTitle: string | null
+  onTutorialExit: () => void
 }
 
 export function TopBar({
@@ -31,6 +34,7 @@ export function TopBar({
   latestVersion, onShowVersions,
   onSaveVersion, isPlaying, onPlay, onStop,
   visualizer, onVisualizerChange,
+  onTutorialOpen, activeTutorialTitle, onTutorialExit,
 }: TopBarProps) {
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [songMenuOpen, setSongMenuOpen] = useState(false)
@@ -133,6 +137,22 @@ export function TopBar({
 
       {/* Right side controls */}
       <div style={{ marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center' }}>
+        {activeTutorialTitle ? (
+          <button
+            onClick={onTutorialExit}
+            style={{ background: 'var(--bg-overlay)', border: '1px solid var(--border)', color: 'var(--accent)', padding: '4px 10px', borderRadius: 4, fontSize: 12, maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+            title="Exit tutorial"
+          >
+            {activeTutorialTitle.length > 22 ? activeTutorialTitle.slice(0, 20) + '…' : activeTutorialTitle} ×
+          </button>
+        ) : (
+          <button
+            onClick={onTutorialOpen}
+            style={{ background: 'none', border: '1px solid var(--border)', color: 'var(--text-secondary)', padding: '4px 10px', borderRadius: 4, fontSize: 12 }}
+          >
+            Tutorial
+          </button>
+        )}
         <select
           value={visualizer}
           onChange={(e) => onVisualizerChange(e.target.value as Visualizer)}

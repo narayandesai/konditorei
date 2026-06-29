@@ -3,11 +3,14 @@ import { useActiveUser } from './hooks/useActiveUser.js'
 import { useSongs } from './hooks/useSongs.js'
 import { useVersions } from './hooks/useVersions.js'
 import { usePublications } from './hooks/usePublications.js'
+import { useTutorial } from './hooks/useTutorial.js'
 import { PublicationsModal } from './components/PublicationsModal.js'
 import { TopBar, type Visualizer } from './components/TopBar.js'
 import { Editor } from './components/Editor.js'
 import { VersionModal } from './components/VersionModal.js'
 import { Visualizer as VisualizerPanel } from './components/Visualizer.js'
+import { TutorialPanel } from './components/TutorialPanel.js'
+import { TutorialPicker } from './components/TutorialPicker.js'
 import * as strudel from './lib/strudel.js'
 import type { StrudelError, HapsCallback } from './lib/strudel.js'
 
@@ -24,6 +27,12 @@ export function App() {
   const [strudelError, setStrudelError] = useState<string | null>(null)
   const [visualizer, setVisualizer] = useState<Visualizer>('none')
   const highlightRef = useRef<HapsCallback | null>(null)
+
+  const [activeTutorialId, setActiveTutorialId] = useState<string | null>(null)
+  const [activeTutorialTitle, setActiveTutorialTitle] = useState<string | null>(null)
+  const [showTutorialPicker, setShowTutorialPicker] = useState(false)
+
+  const tutorial = useTutorial(activeTutorialId, editorCode, isPlaying)
 
   function handleError(e: StrudelError) {
     setStrudelError(e.message)
@@ -50,6 +59,23 @@ export function App() {
     strudel.reset()
     setIsPlaying(false)
   }, [activeSong?.id])
+
+  // Load step code into editor when the tutorial step changes.
+  useEffect(() => {
+    if (tutorial.currentStep?.code != null) {
+      setEditorCode(tutorial.currentStep.code)
+    }
+  }, [tutorial.currentIndex, tutorial.steps])
+
+  function handleTutorialSelect(id: string, title: string) {
+    setActiveTutorialId(id)
+    setActiveTutorialTitle(title)
+  }
+
+  function handleTutorialExit() {
+    setActiveTutorialId(null)
+    setActiveTutorialTitle(null)
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -81,18 +107,29 @@ export function App() {
           }}
           visualizer={visualizer}
           onVisualizerChange={setVisualizer}
+          onTutorialOpen={() => setShowTutorialPicker(true)}
+          activeTutorialTitle={activeTutorialTitle}
+          onTutorialExit={handleTutorialExit}
         />
       </div>
-      <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-        {/* Editor */}
-        <div style={{ flex: 1, overflow: 'hidden' }}>
-          <Editor
-            code={editorCode}
-            onChange={setEditorCode}
-            onRegisterHighlight={(fn) => { highlightRef.current = fn ?? null }}
+      <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: activeTutorialId ? 'row' : 'column' }}>
+        {activeTutorialId && activeTutorialTitle && (
+          <TutorialPanel
+            tutorialTitle={activeTutorialTitle}
+            controls={tutorial}
+            onExit={handleTutorialExit}
           />
+        )}
+        <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ flex: 1, overflow: 'hidden' }}>
+            <Editor
+              code={editorCode}
+              onChange={setEditorCode}
+              onRegisterHighlight={(fn) => { highlightRef.current = fn ?? null }}
+            />
+          </div>
+          <VisualizerPanel type={visualizer} isPlaying={isPlaying} />
         </div>
-        <VisualizerPanel type={visualizer} isPlaying={isPlaying} />
       </div>
       {strudelError && (
         <div style={{ position: 'fixed', bottom: 16, right: 16, background: 'var(--red)', color: '#fff', padding: '8px 14px', borderRadius: 6, fontSize: 13 }}>
@@ -117,6 +154,12 @@ export function App() {
           onUpdatePublication={updatePublication}
           onDeletePublication={deletePublication}
           onClose={() => setShowPublicationsModal(false)}
+        />
+      )}
+      {showTutorialPicker && (
+        <TutorialPicker
+          onSelect={handleTutorialSelect}
+          onClose={() => setShowTutorialPicker(false)}
         />
       )}
     </div>
