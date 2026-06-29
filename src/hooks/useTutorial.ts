@@ -35,7 +35,6 @@ export function useTutorial(
       if (cancelled) return
       setSteps(s)
       setCurrentIndex(0)
-      setQuizAnswers(new Array(s[0]?.fitness.length ?? 0).fill(null))
     }).catch(() => {
       if (!cancelled) setSteps([])
     })
