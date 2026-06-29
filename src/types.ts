@@ -60,6 +60,7 @@ export interface TutorialMeta {
   description: string
   source: 'static' | 'uploaded'
   step_count: number
+  created_at: number
 }
 
 export interface TutorialStep {
