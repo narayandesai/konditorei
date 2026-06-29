@@ -1,4 +1,4 @@
-import type { User, Song, Version, VersionWithCode, DiffLine, Publication, PublicationPatch, PublicPlayerResponse } from '../types.js'
+import type { User, Song, Version, VersionWithCode, DiffLine, Publication, PublicationPatch, PublicPlayerResponse, TutorialMeta, TutorialStep } from '../types.js'
 
 const base = '/api'
 
@@ -42,5 +42,11 @@ export const api = {
       req<void>('DELETE', `/publications/${id}`),
     getBySlug: (slug: string) =>
       req<PublicPlayerResponse>('GET', `/p/${slug}`),
+  },
+  tutorials: {
+    list: () => req<TutorialMeta[]>('GET', '/tutorials'),
+    steps: (id: string) => req<TutorialStep[]>('GET', `/tutorials/${id}/steps`),
+    upload: (tutorial: unknown) => req<TutorialMeta>('POST', '/tutorials', tutorial),
+    delete: (id: string) => req<void>('DELETE', `/tutorials/${id}`),
   },
 }
