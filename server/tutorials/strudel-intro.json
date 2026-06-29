@@ -1,0 +1,24 @@
+{
+  "id": "strudel-intro",
+  "title": "Introduction to Strudel",
+  "description": "Learn live coding with Strudel patterns — step by step.",
+  "steps": [
+    {
+      "title": "Welcome",
+      "content": "# Welcome to Strudel\n\nThis tutorial will teach you live coding with Strudel patterns.\n\nPress **Play** to begin.",
+      "code": "note(\"c4\")",
+      "fitness": [
+        { "type": "play" }
+      ]
+    },
+    {
+      "title": "Change the note",
+      "content": "Replace `c4` with `e4` in the editor and press Play again.",
+      "code": "note(\"c4\")",
+      "fitness": [
+        { "type": "code_contains", "value": "e4" },
+        { "type": "play" }
+      ]
+    }
+  ]
+}

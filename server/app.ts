@@ -5,8 +5,9 @@ import { usersRouter } from './routes/users.js'
 import { songsRouter } from './routes/songs.js'
 import { versionsRouter } from './routes/versions.js'
 import { songPublicationsRouter, publicationsMutationRouter, publicPlayerRouter } from './routes/publications.js'
+import { tutorialsRouter } from './routes/tutorials.js'
 
-export function createApp(db: Db) {
+export function createApp(db: Db, tutorialsDir?: string) {
   const app = express()
   app.use(express.json())
   app.use('/api/users', usersRouter(db))
@@ -15,5 +16,6 @@ export function createApp(db: Db) {
   app.use('/api/songs', songPublicationsRouter(db))
   app.use('/api/publications', publicationsMutationRouter(db))
   app.use('/api', publicPlayerRouter(db))
+  app.use('/api/tutorials', tutorialsRouter(db, tutorialsDir))
   return app
 }
