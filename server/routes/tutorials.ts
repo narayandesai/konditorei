@@ -26,7 +26,10 @@ function validateTutorial(body: unknown): string | null {
       const r = s.fitness[j] as Record<string, unknown>
       if (!VALID_FITNESS_TYPES.has(r.type as string)) return `step ${i}, rule ${j}: unknown type "${r.type}"`
       if (r.type === 'code_contains' && (typeof r.value !== 'string' || !r.value)) return `step ${i}, rule ${j}: code_contains needs value`
-      if (r.type === 'code_matches' && (typeof r.pattern !== 'string' || !r.pattern)) return `step ${i}, rule ${j}: code_matches needs pattern`
+      if (r.type === 'code_matches') {
+        if (typeof r.pattern !== 'string' || !r.pattern) return `step ${i}, rule ${j}: code_matches needs pattern`
+        try { new RegExp(r.pattern) } catch { return `step ${i}, rule ${j}: code_matches pattern is not a valid regex` }
+      }
       if (r.type === 'quiz') {
         if (typeof r.question !== 'string' || !r.question.trim()) return `step ${i}, rule ${j}: quiz needs question`
         if (!Array.isArray(r.options) || r.options.length < 2) return `step ${i}, rule ${j}: quiz needs at least 2 options`
@@ -87,6 +90,10 @@ function isStaticId(dir: string, id: string): boolean {
   return existsSync(join(dir, `${id}.json`))
 }
 
+function isValidId(id: string): boolean {
+  return /^[a-z0-9-]{3,80}$/.test(id)
+}
+
 export function tutorialsRouter(db: Db, tutorialsDir: string = DEFAULT_TUTORIALS_DIR) {
   const router = Router()
 
@@ -102,6 +109,7 @@ export function tutorialsRouter(db: Db, tutorialsDir: string = DEFAULT_TUTORIALS
 
   router.get('/:id/steps', (req, res) => {
     const { id } = req.params
+    if (!isValidId(id)) { res.status(404).json({ error: 'tutorial not found' }); return }
     const staticSteps = loadStaticSteps(tutorialsDir, id)
     if (staticSteps) { res.json(staticSteps); return }
     if (!db.prepare('SELECT id FROM tutorials WHERE id = ?').get(id)) {
@@ -142,15 +150,22 @@ export function tutorialsRouter(db: Db, tutorialsDir: string = DEFAULT_TUTORIALS
     }
 
     const now = Date.now()
-    db.prepare(
-      'INSERT INTO tutorials (id, title, description, source, step_count, created_at) VALUES (?, ?, ?, ?, ?, ?)'
-    ).run(t.id, t.title, t.description, 'uploaded', t.steps.length, now)
-
-    for (let i = 0; i < t.steps.length; i++) {
-      const s = t.steps[i]
+    db.exec('BEGIN')
+    try {
       db.prepare(
-        'INSERT INTO tutorial_steps (tutorial_id, position, title, content, code, fitness) VALUES (?, ?, ?, ?, ?, ?)'
-      ).run(t.id, i, s.title, s.content, s.code ?? null, JSON.stringify(s.fitness))
+        'INSERT INTO tutorials (id, title, description, source, step_count, created_at) VALUES (?, ?, ?, ?, ?, ?)'
+      ).run(t.id, t.title, t.description, 'uploaded', t.steps.length, now)
+
+      for (let i = 0; i < t.steps.length; i++) {
+        const s = t.steps[i]
+        db.prepare(
+          'INSERT INTO tutorial_steps (tutorial_id, position, title, content, code, fitness) VALUES (?, ?, ?, ?, ?, ?)'
+        ).run(t.id, i, s.title, s.content, s.code ?? null, JSON.stringify(s.fitness))
+      }
+      db.exec('COMMIT')
+    } catch (e) {
+      db.exec('ROLLBACK')
+      throw e
     }
 
     const meta = db.prepare(
@@ -161,6 +176,7 @@ export function tutorialsRouter(db: Db, tutorialsDir: string = DEFAULT_TUTORIALS
 
   router.delete('/:id', (req, res) => {
     const { id } = req.params
+    if (!isValidId(id)) { res.status(404).json({ error: 'tutorial not found' }); return }
     if (isStaticId(tutorialsDir, id)) {
       res.status(403).json({ error: 'static tutorials cannot be deleted' }); return
     }
