@@ -205,6 +205,12 @@ describe('tutorials', () => {
       expect(res.status).toBe(400)
     })
 
+    it('returns 400 when code_matches lacks pattern', async () => {
+      const badSteps = [{ ...VALID_TUTORIAL.steps[0], fitness: [{ type: 'code_matches' }] }]
+      const res = await request(app).post('/api/tutorials').send({ ...VALID_TUTORIAL, steps: badSteps })
+      expect(res.status).toBe(400)
+    })
+
     it('returns 400 when quiz has only one option', async () => {
       const badSteps = [{
         ...VALID_TUTORIAL.steps[0],
