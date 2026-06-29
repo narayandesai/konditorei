@@ -1,22 +1,162 @@
 {
   "id": "strudel-intro",
   "title": "Introduction to Strudel",
-  "description": "Learn live coding with Strudel patterns — step by step.",
+  "description": "Learn live coding with Strudel patterns — from your first note to layered rhythms.",
   "steps": [
     {
-      "title": "Welcome",
-      "content": "# Welcome to Strudel\n\nThis tutorial will teach you live coding with Strudel patterns.\n\nPress **Play** to begin.",
+      "title": "Your first sound",
+      "content": "# Your first sound\n\nStrudel is a live coding environment for music. You write patterns in the editor and hear them loop in real time.\n\nThe editor already contains `note(\"c4\")` — a middle C. Press **Play** to hear it.",
       "code": "note(\"c4\")",
       "fitness": [
         { "type": "play" }
       ]
     },
     {
-      "title": "Change the note",
-      "content": "Replace `c4` with `e4` in the editor and press Play again.",
+      "title": "Change the pitch",
+      "content": "# Change the pitch\n\nNotes follow standard notation: `c4`, `d4`, `e4`, `f4`, `g4`, `a4`, `b4` — then `c5` an octave up.\n\nSharps use `#`: `c#4`, `f#4`. Flats use `b`: `bb4`, `eb4`.\n\nChange `c4` to `e4` in the editor and press Play.",
       "code": "note(\"c4\")",
       "fitness": [
         { "type": "code_contains", "value": "e4" },
+        { "type": "play" }
+      ]
+    },
+    {
+      "title": "A sequence",
+      "content": "# A sequence\n\nSeparate notes with **spaces** to play them one after another, evenly spread across a cycle:\n\n```\nnote(\"c4 e4 g4\")\n```\n\nThis plays C, E, G in sequence — a broken chord. Try it and press Play.",
+      "code": "note(\"c4 e4 g4\")",
+      "fitness": [
+        { "type": "code_contains", "value": "note(" },
+        { "type": "play" }
+      ]
+    },
+    {
+      "title": "Longer sequences",
+      "content": "# Longer sequences\n\nAdd more notes to the sequence — Strudel fits them all into the same cycle length, so more notes = faster pace.\n\nTry:\n```\nnote(\"c4 d4 e4 f4 g4 a4 b4 c5\")\n```\n\nPress Play to hear the scale.",
+      "code": "note(\"c4 d4 e4 f4 g4 a4 b4 c5\")",
+      "fitness": [
+        { "type": "code_contains", "value": "c5" },
+        { "type": "play" }
+      ]
+    },
+    {
+      "title": "Chords",
+      "content": "# Chords\n\nUse **commas** to play notes simultaneously:\n\n```\nnote(\"c4,e4,g4\")\n```\n\nYou can combine sequences and chords:\n```\nnote(\"c4,e4,g4 d4,f4,a4\")\n```\n\nTry the C and D minor chords alternating.",
+      "code": "note(\"c4,e4,g4 d4,f4,a4\")",
+      "fitness": [
+        { "type": "code_contains", "value": "," },
+        { "type": "play" }
+      ]
+    },
+    {
+      "title": "Quiz: sequences vs chords",
+      "content": "# Check your understanding\n\nYou've learned two ways to combine notes.",
+      "fitness": [
+        {
+          "type": "quiz",
+          "question": "Which separator plays notes at the same time?",
+          "options": ["Space ( )", "Comma (,)", "Semicolon (;)", "Pipe (|)"],
+          "answer": 1
+        },
+        {
+          "type": "quiz",
+          "question": "What happens when you add more notes to a sequence?",
+          "options": [
+            "The cycle gets longer",
+            "The notes play faster (same cycle length, more notes)",
+            "Only the first 4 notes play",
+            "The pitch shifts up"
+          ],
+          "answer": 1
+        }
+      ]
+    },
+    {
+      "title": "Drum samples",
+      "content": "# Drum samples\n\nUse `s()` instead of `note()` to trigger samples. The most common are:\n\n- `bd` — bass drum (kick)\n- `sd` — snare drum\n- `hh` — hi-hat\n- `cp` — clap\n\nTry a basic beat:\n```\ns(\"bd sd bd sd\")\n```\n\nPress Play.",
+      "code": "s(\"bd sd bd sd\")",
+      "fitness": [
+        { "type": "code_contains", "value": "s(" },
+        { "type": "play" }
+      ]
+    },
+    {
+      "title": "Rests",
+      "content": "# Rests\n\nUse `~` to insert a rest (silence) in a pattern:\n\n```\ns(\"bd ~ sd ~\")\n```\n\nThis gives a classic kick-snare groove with space. Try varying the rest placement:\n```\ns(\"bd bd sd ~\")\n```",
+      "code": "s(\"bd ~ sd ~\")",
+      "fitness": [
+        { "type": "code_contains", "value": "~" },
+        { "type": "play" }
+      ]
+    },
+    {
+      "title": "Speed: fast and slow",
+      "content": "# Speed\n\nChain `.fast(n)` to multiply the playback rate, or `.slow(n)` to divide it:\n\n```\nnote(\"c4 e4 g4\").fast(2)\n```\n\nPlays the pattern twice per cycle. `.slow(2)` stretches it over two cycles.\n\nAdd `.fast(2)` to your current pattern and hear the difference.",
+      "code": "note(\"c4 e4 g4\").fast(2)",
+      "fitness": [
+        { "type": "code_contains", "value": ".fast(" },
+        { "type": "play" }
+      ]
+    },
+    {
+      "title": "Effects: reverb",
+      "content": "# Effects\n\nStrudel has built-in audio effects you chain with `.`:\n\n- `.room(0.5)` — reverb (0 = dry, 1 = very wet)\n- `.delay(0.3)` — echo\n- `.lpf(800)` — low-pass filter (cuts highs)\n- `.gain(0.5)` — volume (0–1)\n\nTry:\n```\nnote(\"c4 e4 g4 b4\").room(0.8)\n```",
+      "code": "note(\"c4 e4 g4 b4\").room(0.8)",
+      "fitness": [
+        { "type": "code_contains", "value": ".room(" },
+        { "type": "play" }
+      ]
+    },
+    {
+      "title": "Stacking patterns",
+      "content": "# Stacking patterns\n\nUse `stack()` to layer multiple patterns playing simultaneously:\n\n```\nstack(\n  note(\"c4 e4 g4 e4\"),\n  s(\"bd ~ sd ~\")\n)\n```\n\nThis combines a melodic pattern with a drum beat. Press Play.",
+      "code": "stack(\n  note(\"c4 e4 g4 e4\"),\n  s(\"bd ~ sd ~\")\n)",
+      "fitness": [
+        { "type": "code_contains", "value": "stack(" },
+        { "type": "play" }
+      ]
+    },
+    {
+      "title": "Mini-notation: alternation",
+      "content": "# Alternation with angle brackets\n\nAngle brackets `< >` alternate between options on each cycle:\n\n```\nnote(\"<c4 e4> g4\")\n```\n\nThe first position plays `c4` on cycle 1, `e4` on cycle 2, repeating. Great for subtle variation.\n\nTry:\n```\nstack(\n  note(\"<c4 e4 g4> <e4 g4>\"),\n  s(\"bd ~ sd ~\")\n)\n```",
+      "code": "stack(\n  note(\"<c4 e4 g4> <e4 g4>\"),\n  s(\"bd ~ sd ~\")\n)",
+      "fitness": [
+        { "type": "code_contains", "value": "<" },
+        { "type": "play" }
+      ]
+    },
+    {
+      "title": "Quiz: effects and stacking",
+      "content": "# Final check",
+      "fitness": [
+        {
+          "type": "quiz",
+          "question": "How do you add reverb to a pattern?",
+          "options": [
+            "reverb(pattern, 0.5)",
+            "pattern.room(0.5)",
+            "s(\"reverb\", 0.5)",
+            "pattern + room(0.5)"
+          ],
+          "answer": 1
+        },
+        {
+          "type": "quiz",
+          "question": "What does `stack()` do?",
+          "options": [
+            "Plays patterns one after another",
+            "Speeds up the pattern",
+            "Plays multiple patterns simultaneously",
+            "Saves the pattern to a file"
+          ],
+          "answer": 2
+        }
+      ]
+    },
+    {
+      "title": "You're live coding!",
+      "content": "# You're live coding!\n\nYou now know the fundamentals of Strudel:\n\n- `note()` for pitched sounds, `s()` for samples\n- **Spaces** for sequences, **commas** for chords, `~` for rests\n- `.fast()` / `.slow()` for tempo\n- `.room()`, `.delay()`, `.lpf()` for effects\n- `stack()` to layer patterns\n- `< >` for per-cycle alternation\n\nThe code below is a starting point — remix it, break it, make it yours.\n\n```\nstack(\n  note(\"<c4 e4 g4> <d4 f4 a4>\").room(0.4),\n  s(\"bd ~ sd ~\").fast(2),\n  s(\"hh*4\").gain(0.4)\n)\n```",
+      "code": "stack(\n  note(\"<c4 e4 g4> <d4 f4 a4>\").room(0.4),\n  s(\"bd ~ sd ~\").fast(2),\n  s(\"hh*4\").gain(0.4)\n)",
+      "fitness": [
         { "type": "play" }
       ]
     }
