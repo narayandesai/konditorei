@@ -153,12 +153,7 @@ export function publicPlayerRouter(db: Db) {
       WHERE p.slug = ?
     `).get(req.params.slug) as unknown as PublicPlayerResponse | undefined
     if (!row) { res.status(404).json({ error: 'not found' }); return }
-    if (row.show_code === 0) {
-      const { code: _code, ...safe } = row
-      res.json(safe)
-    } else {
-      res.json(row)
-    }
+    res.json(row)
   })
 
   return router
