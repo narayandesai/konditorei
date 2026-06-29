@@ -1,0 +1,292 @@
+# Tutorial Mode — Design Spec
+
+**Date:** 2026-06-28
+**Status:** Approved
+
+## Overview
+
+A flexible, side-panel tutorial mode that loads arbitrary tutorials alongside the live editor. Users progress through steps by satisfying fitness criteria: pressing play, matching code patterns, or answering quiz questions. Tutorials ship as static JSON files (bundled with the server) or are uploaded dynamically and stored in the database. The first tutorial — a Strudel language introduction — will be generated separately using the `/teach` skill and dropped into `server/tutorials/strudel-intro.json`.
+
+---
+
+## Tutorial Format
+
+Tutorials are JSON files conforming to this schema. The same format is used for both static files and the API upload body.
+
+```json
+{
+  "id": "strudel-intro",
+  "title": "Introduction to Strudel",
+  "description": "Learn live coding with Strudel patterns",
+  "steps": [
+    {
+      "title": "Your first note",
+      "content": "# Your first note\n\nPress **Play** to hear a C4 note.",
+      "code": "note(\"c4\")",
+      "fitness": [
+        { "type": "play" }
+      ]
+    },
+    {
+      "title": "Change the note",
+      "content": "Replace `c4` with `e4` and play it.",
+      "code": "note(\"c4\")",
+      "fitness": [
+        { "type": "code_contains", "value": "e4" },
+        { "type": "play" }
+      ]
+    },
+    {
+      "title": "Quiz: patterns",
+      "content": "Let's check your understanding.",
+      "fitness": [
+        {
+          "type": "quiz",
+          "question": "Which function sequences notes over time?",
+          "options": ["note()", "sequence()", "s()"],
+          "answer": 1
+        }
+      ]
+    }
+  ]
+}
+```
+
+### Fitness Rule Types
+
+All rules in a step must pass before Next is enabled.
+
+| Type | Fields | Passes when |
+|------|--------|-------------|
+| `play` | — | `isPlaying` is `true` |
+| `code_contains` | `value: string` | editor text includes `value` (case-sensitive) |
+| `code_matches` | `pattern: string` (regex) | editor text matches the regex |
+| `quiz` | `question`, `options: string[]`, `answer: number` | user selects `options[answer]` |
+
+### Step Fields
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `title` | yes | Displayed at top of panel step |
+| `content` | yes | Markdown — rendered in panel |
+| `code` | no | If present, loaded into editor when step is entered |
+| `fitness` | yes | Array of fitness rules (all must pass) |
+
+---
+
+## Data Model
+
+Two new DB tables for dynamically uploaded tutorials.
+
+```sql
+CREATE TABLE IF NOT EXISTS tutorials (
+  id          TEXT PRIMARY KEY,
+  title       TEXT NOT NULL,
+  description TEXT NOT NULL,
+  source      TEXT NOT NULL DEFAULT 'uploaded',  -- 'static' or 'uploaded'
+  step_count  INTEGER NOT NULL,
+  created_at  INTEGER NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS tutorial_steps (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  tutorial_id TEXT NOT NULL REFERENCES tutorials(id) ON DELETE CASCADE,
+  position    INTEGER NOT NULL,
+  title       TEXT NOT NULL,
+  content     TEXT NOT NULL,
+  code        TEXT,
+  fitness     TEXT NOT NULL   -- JSON-serialized FitnessRule[]
+);
+
+CREATE INDEX IF NOT EXISTS idx_tutorial_steps_tutorial_id ON tutorial_steps(tutorial_id);
+```
+
+Static tutorials are served directly from `server/tutorials/*.json` — they are never written to the DB. Their `source` in API responses is `'static'`.
+
+---
+
+## API
+
+One new router `tutorialsRouter(db)` mounted at `/api/tutorials` in `server/app.ts`.
+
+```
+GET  /api/tutorials
+     → TutorialMeta[] (id, title, description, source, step_count)
+     Static files + DB rows merged. Static first, then uploaded by created_at DESC.
+
+GET  /api/tutorials/:id/steps
+     → TutorialStep[]  ordered by position
+     Reads from static file or DB depending on source.
+     → 404 if id not found
+
+POST /api/tutorials
+     body: the full tutorial JSON (same schema as static files)
+     → TutorialMeta (201)
+     Validates structure: required fields, at least one step, valid fitness rule types.
+     → 400 if validation fails
+     → 409 if id conflicts with existing tutorial (static or uploaded)
+
+DELETE /api/tutorials/:id
+     → 204
+     → 403 if tutorial is static (source = 'static')
+     → 404 if not found
+```
+
+### New Types (`src/types.ts`)
+
+```ts
+export interface TutorialMeta {
+  id: string
+  title: string
+  description: string
+  source: 'static' | 'uploaded'
+  step_count: number
+}
+
+export interface TutorialStep {
+  id: number
+  tutorial_id: string
+  position: number
+  title: string
+  content: string
+  code?: string
+  fitness: FitnessRule[]
+}
+
+export type FitnessRule =
+  | { type: 'play' }
+  | { type: 'code_contains'; value: string }
+  | { type: 'code_matches'; pattern: string }
+  | { type: 'quiz'; question: string; options: string[]; answer: number }
+```
+
+---
+
+## Server
+
+### New Files
+
+- `server/tutorials/` — directory for static JSON tutorial files
+- `server/tutorials/strudel-intro.json` — first tutorial (content TBD, generated by `/teach`)
+- `server/routes/tutorials.ts` — `tutorialsRouter(db)`
+
+### Static File Loading
+
+`GET /api/tutorials` reads `server/tutorials/*.json` from disk at request time (no caching needed at this scale). Each file is validated against the schema on read — malformed files are logged and skipped. Static tutorial IDs are detected by checking whether a matching file exists.
+
+### Validation
+
+`POST /api/tutorials` validates:
+- `id` matches `/^[a-z0-9-]+$/`, 3–80 chars
+- `title` and `description` are non-empty strings
+- `steps` is a non-empty array
+- Each step has `title` (string), `content` (string), `fitness` (non-empty array)
+- Each fitness rule has a valid `type`; required fields present per type
+- `quiz` rules: `options` length ≥ 2, `answer` is a valid index
+
+---
+
+## Frontend
+
+### New Files
+
+- `src/hooks/useTutorial.ts`
+- `src/components/TutorialPanel.tsx`
+- `src/components/TutorialPicker.tsx`
+
+### Modified Files
+
+- `src/App.tsx` — add tutorial state and split layout
+- `src/components/TopBar.tsx` — add Tutorial button
+- `src/lib/api.ts` — add `api.tutorials.*`
+- `src/types.ts` — add new types
+
+### `useTutorial`
+
+```ts
+function useTutorial(
+  tutorialId: string | null,
+  editorCode: string,
+  isPlaying: boolean
+): {
+  steps: TutorialStep[]
+  currentIndex: number
+  currentStep: TutorialStep | null
+  fitness: boolean[]          // one entry per rule in currentStep.fitness
+  allPassed: boolean
+  goNext: () => void
+  goPrev: () => void
+  exit: () => void
+}
+```
+
+- Fetches `api.tutorials.steps(tutorialId)` when `tutorialId` changes
+- `fitness` is re-derived (not state) on every render from `editorCode` and `isPlaying`
+- `quiz` fitness state is tracked separately: `quizAnswer: number | null` per step index
+- `goNext()` advances `currentIndex`; if the new step has `code`, the hook returns it via a `stepCode: string | null` field — `App` applies it to `setEditorCode`
+- `exit()` sets `tutorialId` to null in the parent
+
+### `TutorialPanel`
+
+Fixed-width (320px) left panel, rendered only when a tutorial is active. Sections top to bottom:
+
+1. **Header**: tutorial title + "Exit" link
+2. **Progress**: "Step N of M" 
+3. **Step title** (h2)
+4. **Content**: markdown rendered to HTML using `marked` (transitive dep via Strudel, already available). Set via `innerHTML` on a sandboxed `div`. No sanitization library needed — tutorial content is author-controlled, not user-generated.
+5. **Quiz UI**: if any fitness rule is `quiz`, render the question and option buttons inline
+6. **Fitness checklist**: list of criteria with ✓ (green) / ○ (muted) per rule. `play` shows "Press Play", `code_contains` shows the value, `code_matches` shows the pattern, `quiz` shows "Answer the question"
+7. **Nav**: Prev button (disabled on step 0) + Next button (disabled until `allPassed`)
+
+### `TutorialPicker`
+
+Small modal (same style as `VersionModal`) listing available tutorials. Each row: title, description, source badge (Static / Uploaded), step count. Clicking a row closes the picker and sets `activeTutorialId`.
+
+### Layout in `App.tsx`
+
+When `activeTutorialId` is set, the main layout switches from a single column to a horizontal split:
+
+```tsx
+<div style={{ display: 'flex', flexDirection: 'row', flex: 1, overflow: 'hidden' }}>
+  <TutorialPanel ... />
+  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <Editor ... />
+    <VisualizerPanel ... />
+  </div>
+</div>
+```
+
+When `activeTutorialId` is null, the original single-column layout is unchanged.
+
+`App` passes `editorCode` and `isPlaying` to `useTutorial` so fitness is always current. When `useTutorial` returns a `stepCode`, `App` applies it to `setEditorCode` in a `useEffect` on `currentIndex`.
+
+### `TopBar`
+
+A "Tutorial" button added to the right side of the bar (before the visualizer picker). Clicking opens `TutorialPicker`. When a tutorial is active, the button shows the tutorial title truncated to ~20 chars with an × to exit.
+
+### Client API additions (`src/lib/api.ts`)
+
+```ts
+tutorials: {
+  list: () => req<TutorialMeta[]>('GET', '/tutorials'),
+  steps: (id: string) => req<TutorialStep[]>('GET', `/tutorials/${id}/steps`),
+  upload: (tutorial: unknown) => req<TutorialMeta>('POST', '/tutorials', tutorial),
+  delete: (id: string) => req<void>('DELETE', `/tutorials/${id}`),
+}
+```
+
+---
+
+## Static Tutorial Stub
+
+`server/tutorials/strudel-intro.json` ships as a stub with 1–2 placeholder steps. Content is filled in by the `/teach` skill in a follow-up task, after this feature is implemented. The tutorial framework must work end-to-end with the stub before content is authored.
+
+---
+
+## Out of Scope
+
+- Tutorial authoring UI (tutorials are authored as JSON files or uploaded via POST)
+- Tutorial progress persistence (progress resets on page reload)
+- User-specific tutorial completion tracking
+- Tutorial ordering / prerequisites
+- Video or audio content in tutorial steps
