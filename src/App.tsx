@@ -61,13 +61,14 @@ export function App() {
   }, [activeSong?.id])
 
   // Load step code into editor when the tutorial step changes.
+  const stepCode = tutorial.currentStep?.code ?? null
   useEffect(() => {
-    if (tutorial.currentStep?.code != null) {
-      setEditorCode(tutorial.currentStep.code)
-    }
-  }, [tutorial.currentIndex, tutorial.steps])
+    if (stepCode != null) setEditorCode(stepCode)
+  }, [stepCode])
 
   function handleTutorialSelect(id: string, title: string) {
+    strudel.stop()
+    setIsPlaying(false)
     setActiveTutorialId(id)
     setActiveTutorialTitle(title)
   }

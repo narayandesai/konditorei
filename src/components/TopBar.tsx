@@ -141,9 +141,9 @@ export function TopBar({
           <button
             onClick={onTutorialExit}
             style={{ background: 'var(--bg-overlay)', border: '1px solid var(--border)', color: 'var(--accent)', padding: '4px 10px', borderRadius: 4, fontSize: 12, maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
-            title="Exit tutorial"
+            title={activeTutorialTitle}
           >
-            {activeTutorialTitle.length > 22 ? activeTutorialTitle.slice(0, 20) + '…' : activeTutorialTitle} ×
+            {activeTutorialTitle} ×
           </button>
         ) : (
           <button
