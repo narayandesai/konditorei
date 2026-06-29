@@ -53,3 +53,27 @@ export interface PublicPlayerResponse {
   code: string
   show_code: 0 | 1
 }
+
+export interface TutorialMeta {
+  id: string
+  title: string
+  description: string
+  source: 'static' | 'uploaded'
+  step_count: number
+}
+
+export interface TutorialStep {
+  id: number
+  tutorial_id: string
+  position: number
+  title: string
+  content: string
+  code?: string
+  fitness: FitnessRule[]
+}
+
+export type FitnessRule =
+  | { type: 'play' }
+  | { type: 'code_contains'; value: string }
+  | { type: 'code_matches'; pattern: string }
+  | { type: 'quiz'; question: string; options: string[]; answer: number }
