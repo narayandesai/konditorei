@@ -1,7 +1,9 @@
 // @ts-ignore — @strudel/webaudio ships no TypeScript declarations
-import { webaudioRepl } from '@strudel/webaudio'
+import { webaudioRepl, samples as loadSamples } from '@strudel/webaudio'
 // @ts-ignore — @strudel/core ships no TypeScript declarations
 import { evalScope } from '@strudel/core'
+
+const DEFAULT_SAMPLES = 'github:tidalcycles/Dirt-Samples/master/'
 
 export type StrudelError = { message: string }
 export type HapsCallback = (haps: unknown[], atTime: number) => void
@@ -18,10 +20,13 @@ let scopeReady: Promise<void> | null = null
 
 function ensureScope(): Promise<void> {
   if (!scopeReady) {
-    scopeReady = evalScope(
-      import('@strudel/core'),
-      import('@strudel/webaudio'),
-    )
+    scopeReady = (async () => {
+      await evalScope(
+        import('@strudel/core'),
+        import('@strudel/webaudio'),
+      )
+      await loadSamples(DEFAULT_SAMPLES)
+    })()
   }
   return scopeReady
 }
