@@ -33,6 +33,16 @@ export default defineConfig({
   plugins: [react(), nodeSqlitePlugin],
   build: {
     outDir: 'dist',
+    chunkSizeWarningLimit: 2000,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('/react') || id.includes('/react-dom')) return 'vendor-react'
+          if (id.includes('@codemirror') || id.includes('/codemirror')) return 'vendor-codemirror'
+          if (id.includes('@strudel')) return 'vendor-strudel'
+        },
+      },
+    },
   },
   test: {
     environment: 'node',

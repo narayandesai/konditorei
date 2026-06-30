@@ -1,4 +1,3 @@
-import { createServer as createViteServer } from 'vite'
 import { createDb } from './db.js'
 import { createApp } from './app.js'
 
@@ -13,6 +12,7 @@ async function main() {
     const { default: sirv } = await import('sirv')
     app.use(sirv('dist', { single: true }))
   } else {
+    const { createServer: createViteServer } = await import('vite')
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: 'spa',
