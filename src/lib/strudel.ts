@@ -2,6 +2,18 @@
 import { webaudioRepl, samples as loadSamples } from '@strudel/webaudio'
 // @ts-ignore — @strudel/core ships no TypeScript declarations
 import { evalScope } from '@strudel/core'
+// @ts-ignore — @strudel/mini ships no TypeScript declarations
+import { miniAllStrings } from '@strudel/mini'
+
+// Static namespace imports — must be the same module instances used by webaudioRepl.
+// Dynamic import('@strudel/core') etc. in evalScope() creates duplicate module instances
+// with a different Pattern class, causing "t.set is not a function" on chained calls.
+// @ts-ignore
+import * as strudelCore from '@strudel/core'
+// @ts-ignore
+import * as strudelWebaudio from '@strudel/webaudio'
+// @ts-ignore
+import * as strudelMini from '@strudel/mini'
 
 const DEFAULT_SAMPLES = 'github:tidalcycles/Dirt-Samples/master/'
 
@@ -21,10 +33,11 @@ let scopeReady: Promise<void> | null = null
 function ensureScope(): Promise<void> {
   if (!scopeReady) {
     scopeReady = (async () => {
-      await evalScope(
-        import('@strudel/core'),
-        import('@strudel/webaudio'),
-      )
+      // Pass static namespace imports so evalScope registers the same Pattern class
+      // instances that webaudioRepl uses — not duplicates from dynamic re-imports.
+      await evalScope(strudelCore, strudelWebaudio, strudelMini)
+      // Enable mini notation parsing for all string arguments (e.g. s("bd*4")).
+      miniAllStrings()
       await loadSamples(DEFAULT_SAMPLES)
     })()
   }
