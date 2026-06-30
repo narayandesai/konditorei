@@ -100,7 +100,7 @@ export function App() {
           isPlaying={isPlaying}
           onPlay={() => {
             strudel.evaluate(editorCode, handleError)
-              .then(() => { strudel.start(handleError); setIsPlaying(true) })
+              .then((ok) => { if (ok) { strudel.start(handleError); setIsPlaying(true) } })
               .catch((e: unknown) => handleError({ message: String(e) }))
           }}
           onStop={() => {
