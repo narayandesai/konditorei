@@ -1,5 +1,5 @@
 // @ts-ignore — @strudel/webaudio ships no TypeScript declarations
-import { webaudioRepl, samples as loadSamples } from '@strudel/webaudio'
+import { webaudioRepl, samples as loadSamples, registerSynthSounds, initAudio } from '@strudel/webaudio'
 // @ts-ignore — @strudel/core ships no TypeScript declarations
 import { evalScope } from '@strudel/core'
 // @ts-ignore — @strudel/mini ships no TypeScript declarations
@@ -38,7 +38,12 @@ function ensureScope(): Promise<void> {
       await evalScope(strudelCore, strudelWebaudio, strudelMini)
       // Enable mini notation parsing for all string arguments (e.g. s("bd*4")).
       miniAllStrings()
+      // Register built-in synth waveforms (triangle, sine, sawtooth, square, etc.)
+      // so note("c4") can resolve to the default triangle oscillator.
+      registerSynthSounds()
       await loadSamples(DEFAULT_SAMPLES)
+      // Load AudioWorklets needed for effects (room, delay, ladder filter, etc.).
+      await initAudio()
     })()
   }
   return scopeReady

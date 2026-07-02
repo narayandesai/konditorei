@@ -6,10 +6,14 @@ const mockRepl = vi.fn(() => ({ evaluate: mockEvaluate, start: vi.fn(), stop: vi
 const mockEvalScope = vi.fn().mockResolvedValue([])
 const mockLoadSamples = vi.fn().mockResolvedValue(undefined)
 const mockMiniAllStrings = vi.fn()
+const mockRegisterSynthSounds = vi.fn()
+const mockInitAudio = vi.fn().mockResolvedValue(undefined)
 
 vi.mock('@strudel/webaudio', () => ({
   webaudioRepl: mockRepl,
   samples: mockLoadSamples,
+  registerSynthSounds: mockRegisterSynthSounds,
+  initAudio: mockInitAudio,
 }))
 vi.mock('@strudel/core', () => ({
   evalScope: mockEvalScope,
@@ -63,16 +67,34 @@ describe('strudel', () => {
       expect(mockLoadSamples).toHaveBeenCalledWith('github:tidalcycles/Dirt-Samples/master/')
     })
 
-    it('init order: evalScope → miniAllStrings → loadSamples', async () => {
-      const callOrder: string[] = []
-      mockEvalScope.mockImplementation(async () => { callOrder.push('evalScope'); return [] })
-      mockMiniAllStrings.mockImplementation(() => { callOrder.push('miniAllStrings') })
-      mockLoadSamples.mockImplementation(async () => { callOrder.push('loadSamples') })
+    it('calls registerSynthSounds() so note("c4") resolves the default triangle oscillator', async () => {
       mockEvaluate.mockResolvedValue('pattern')
 
       await strudel.evaluate('note("c4")', vi.fn())
 
-      expect(callOrder).toEqual(['evalScope', 'miniAllStrings', 'loadSamples'])
+      expect(mockRegisterSynthSounds).toHaveBeenCalledOnce()
+    })
+
+    it('calls initAudio() so AudioWorklets are loaded for effects like room() and delay()', async () => {
+      mockEvaluate.mockResolvedValue('pattern')
+
+      await strudel.evaluate('note("c4").room(0.5)', vi.fn())
+
+      expect(mockInitAudio).toHaveBeenCalledOnce()
+    })
+
+    it('init order: evalScope → miniAllStrings → registerSynthSounds → loadSamples → initAudio', async () => {
+      const callOrder: string[] = []
+      mockEvalScope.mockImplementation(async () => { callOrder.push('evalScope'); return [] })
+      mockMiniAllStrings.mockImplementation(() => { callOrder.push('miniAllStrings') })
+      mockRegisterSynthSounds.mockImplementation(() => { callOrder.push('registerSynthSounds') })
+      mockLoadSamples.mockImplementation(async () => { callOrder.push('loadSamples') })
+      mockInitAudio.mockImplementation(async () => { callOrder.push('initAudio') })
+      mockEvaluate.mockResolvedValue('pattern')
+
+      await strudel.evaluate('note("c4")', vi.fn())
+
+      expect(callOrder).toEqual(['evalScope', 'miniAllStrings', 'registerSynthSounds', 'loadSamples', 'initAudio'])
     })
 
     it('returns true when webaudioRepl evaluate returns a pattern', async () => {
@@ -94,7 +116,7 @@ describe('strudel', () => {
       expect(ok).toBe(false)
     })
 
-    it('does not re-run evalScope, miniAllStrings, or loadSamples on subsequent evaluate calls', async () => {
+    it('does not re-run init functions on subsequent evaluate calls', async () => {
       mockEvaluate.mockResolvedValue('pattern')
 
       await strudel.evaluate('note("c4")', vi.fn())
@@ -102,7 +124,9 @@ describe('strudel', () => {
 
       expect(mockEvalScope).toHaveBeenCalledOnce()
       expect(mockMiniAllStrings).toHaveBeenCalledOnce()
+      expect(mockRegisterSynthSounds).toHaveBeenCalledOnce()
       expect(mockLoadSamples).toHaveBeenCalledOnce()
+      expect(mockInitAudio).toHaveBeenCalledOnce()
     })
   })
 })
